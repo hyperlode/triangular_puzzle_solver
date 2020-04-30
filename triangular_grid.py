@@ -24,47 +24,89 @@ class TriangularGrid():
                 
     
     def __str__(self):
-        g = ""
+
+        grid_disp = []     
+
+
         for row in range(self._rows):
+            even_row = row % 2 == 0
+            
+            row_disp = []
+
             for col in range(self._cols):
-                
-                if self._cells[(row,col)] == CELL_FAKE:
-                    if row % 2 == 0:
-                        g += " /\\ "
+                cell_disp = []
+                even_col = col % 2 == 0
+
+                if even_row:
+                    if even_col:
+                        cell_disp.append("  /")
+                        cell_disp.append(" / ")
+                        cell_disp.append("/__")
                     else:
-                        g += "\\EE/"
-                elif self._cells[(row,col)] == CELL_ON:
-                    if row % 2 == 0:
-                        g += " /\\ "
-                    else:
-                        g += "\\* /"
+                        cell_disp.append("\\  ")
+                        cell_disp.append(" \\ ")
+                        cell_disp.append("__\\")
                 else:
-                    if row % 2 == 0:
-                        g += " /\\ "
+                    if even_col:
+                        cell_disp.append("\\  ")
+                        cell_disp.append(" \\ ")
+                        cell_disp.append("__\\")
                     else:
-                        g += "\\  /"
+                        cell_disp.append("  /")
+                        cell_disp.append(" / ")
+                        cell_disp.append("/__")
+
+                row_disp.append(cell_disp)
+            
+            grid_disp.append(row_disp)
+
+
+        grid_str = ""
+        for row in range(self._rows):
+            for line in range(3):
+                for col in range(self._cols):
+                    grid_str += grid_disp[row][col][line]
+                
+                grid_str += "\n"
+
+        return grid_str
+                # if self._cells[(row,col)] == CELL_FAKE:
+                #     if row % 2 == 0:
+                #         g += " /\\ "
+                #     else:
+                #         g += "\\EE/"
+                # elif self._cells[(row,col)] == CELL_ON:
+                #     if row % 2 == 0:
+                #         g += " /\\ "
+                #     else:
+                #         g += "\\* /"
+                # else:
+        #             if row % 2 == 0:
+        #                 g += " /\\ "
+        #             else:
+        #                 g += "\\  /"
                         
-            g += "\n"
-            for col in range(self._cols):
-                if self._cells[(row,col)] == CELL_FAKE:
-                    if row % 2 == 0:
-                        g += "/EE\\"
-                    else:
-                        g += "_\\/_"
-                elif self._cells[(row,col)] == CELL_ON:
-                    if row % 2 == 0:
-                        g += "/_*\\"
-                    else:
-                        g += "_\\/_"
+        #     g += "\n"
+        #     for col in range(self._cols):
+        #         if self._cells[(row,col)] == CELL_FAKE:
+        #             if row % 2 == 0:
+        #                 g += "/EE\\"
+        #             else:
+        #                 g += "_\\/_"
+        #         elif self._cells[(row,col)] == CELL_ON:
+        #             if row % 2 == 0:
+        #                 g += "/_*\\"
+        #             else:
+        #                 g += "_\\/_"
                 
                 
-                else:
-                    if row % 2 == 0:
-                        g += "/__\\"
-                    else:
-                        g += "_\\/_"
-            g += "\n"
-        return g
+        #         else:
+        #             if row % 2 == 0:
+        #                 g += "/__\\"
+        #             else:
+        #                 g += "_\\/_"
+        #     g += "\n"
+        # return g
 
     def set_cell(self, cell, on_else_off):
         value = CELL_OFF
