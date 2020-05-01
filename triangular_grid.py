@@ -3,12 +3,12 @@ import traceback
 # isometric grid, triangular grid.
 # has one extra cell at all borders internally. 
 
-CELL_FAKE = 0  # for programatorical reasons (to have no exception on the edge of the grid)
+CELL_EDGE = 0  # for programatorical reasons (to have no exception on the edge of the grid)
 CELL_NOGO = 1  # not allowed --> i.e. board edge 
 CELL_ON = 2
 CELL_OFF = 3
 
-display_fill = {CELL_FAKE:"!", CELL_NOGO:"-", CELL_ON:"O", CELL_OFF:" "}
+display_fill = {CELL_EDGE:"!", CELL_NOGO:"-", CELL_ON:"O", CELL_OFF:" "}
 
 class TriangularGrid():
 
@@ -20,14 +20,51 @@ class TriangularGrid():
         for row in range(self._rows):
             for col in range(self._cols):
                 if row == 0 or col == 0:
-                    self._cells[(row, col)] = CELL_FAKE
+                    self._cells[(row, col)] = CELL_EDGE
                 elif row == self._rows - 1 \
                      or col == self._cols - 1:
-                    self._cells[(row, col)] = CELL_FAKE
+                    self._cells[(row, col)] = CELL_EDGE
                 else:
                     self._cells[(row, col)] = CELL_OFF
-                
-    
+
+    def cell_to_internal_cell(self, cell):
+ 
+        r,c = cell
+        return (r+1, c+1) # transform to internal board
+
+    def internal_cell_to_cell(self, internal_cell):
+        r,c = internal_cell 
+        return (r-1, c-1)
+
+    def get_neighbours(self, cell):
+        # get all valid adjecent triangles.
+        cell = self.cell_to_internal_cell(cell)
+
+        r,c = cell
+        neighbours = [(r,c-1),(r,c+1)]  # horizonal
+        if (r + c) % 2 == 0:
+            # even sum cells = upwards pointing triangles
+            neighbours.append((r+1,c))
+        else:
+            neighbours.append((r-1,c))
+        valid_neighbours = [cell for cell in neighbours if self._cells[cell] != CELL_EDGE] 
+
+        return  [self.internal_cell_to_cell(cell) for cell in valid_neighbours]
+        
+    def set_cell(self, cell, on_else_off):
+        cell = self.cell_to_internal_cell(cell)
+        value = CELL_OFF
+        if on_else_off:
+            value = CELL_ON
+
+        if self._cells[cell] == CELL_EDGE:
+            raise IllegalCellException
+
+        if self._cells[cell] == CELL_NOGO:
+            raise NoGoCellException
+        
+        self._cells[cell] = value
+
     def __str__(self):
 
         grid_disp = []     
@@ -42,25 +79,25 @@ class TriangularGrid():
                 cell_disp = []
                 even_col = col % 2 == 0
 
-                if self._cells[(row,col)] == CELL_FAKE:
+                if self._cells[(row,col)] == CELL_EDGE:
                     
                     if row == 0 or row == self._rows-1:
 
-                        disp_fill_neighbour_left = display_fill[CELL_FAKE]
-                        disp_fill_neighbour_right = display_fill[CELL_FAKE]
-                        disp_fill_current = display_fill[CELL_FAKE]
+                        disp_fill_neighbour_left = display_fill[CELL_EDGE]
+                        disp_fill_neighbour_right = display_fill[CELL_EDGE]
+                        disp_fill_current = display_fill[CELL_EDGE]
 
                     elif col == 0:
-                        disp_fill_neighbour_left = display_fill[CELL_FAKE]
+                        disp_fill_neighbour_left = display_fill[CELL_EDGE]
                         disp_fill_current = display_fill[self._cells[(row,col)]]
 
                     elif col == self._cols-1:
                         if col % 2 == 0:
-                            disp_fill_current = display_fill[CELL_FAKE]
+                            disp_fill_current = display_fill[CELL_EDGE]
                             disp_fill_neighbour_left = display_fill[self._cells[(row,col-1)]]
     
                         else:
-                            disp_fill_neighbour_right = display_fill[CELL_FAKE]
+                            disp_fill_neighbour_right = display_fill[CELL_EDGE]
                             disp_fill_current = display_fill[self._cells[(row,col)]]
 
                 else:
@@ -121,23 +158,7 @@ class TriangularGrid():
 
         return grid_str
 
-    def set_cell(self, cell, on_else_off):
-        
-        r,c = cell
-        cell = (r+1, c+1) # transform to internal board
-
-        value = CELL_OFF
-        if on_else_off:
-            value = CELL_ON
-
-        if self._cells[cell] == CELL_FAKE:
-            raise IllegalCellException
-
-        if self._cells[cell] == CELL_NOGO:
-            raise NoGoCellException
-        
-        self._cells[cell] = value
-
+    
 if __name__ == "__main__":
     g = TriangularGrid(10,15)
     try:
@@ -151,6 +172,8 @@ if __name__ == "__main__":
     g.set_cell((3,3),CELL_ON)
     g.set_cell((3,4),CELL_ON)
     g.set_cell((9,13),CELL_ON)
+
+    print(g.get_neighbours((0,1)))
 
     # g.set_cell((4,5),CELL_ON)
     print(str(g))
