@@ -1,6 +1,9 @@
 import traceback
 
-CELL_FAKE = 0  # for programatorical reasons
+# isometric grid, triangular grid.
+# has one extra cell at all borders internally. 
+
+CELL_FAKE = 0  # for programatorical reasons (to have no exception on the edge of the grid)
 CELL_NOGO = 1  # not allowed --> i.e. board edge 
 CELL_ON = 2
 CELL_OFF = 3
@@ -10,8 +13,8 @@ display_fill = {CELL_FAKE:"!", CELL_NOGO:"-", CELL_ON:"O", CELL_OFF:" "}
 class TriangularGrid():
 
     def __init__(self, rows, cols):
-        self._rows = rows
-        self._cols = cols
+        self._rows = rows + 2
+        self._cols = cols + 2
 
         self._cells = {}
         for row in range(self._rows):
@@ -40,15 +43,31 @@ class TriangularGrid():
                 even_col = col % 2 == 0
 
                 if self._cells[(row,col)] == CELL_FAKE:
+                    
+                    if row == 0 or row == self._rows-1:
 
-                    disp_fill_current = display_fill[CELL_FAKE]
-                    disp_fill_neighbour_left = display_fill[CELL_FAKE]
-                    disp_fill_neightbour_right = display_fill[CELL_FAKE]
+                        disp_fill_neighbour_left = display_fill[CELL_FAKE]
+                        disp_fill_neighbour_right = display_fill[CELL_FAKE]
+                        disp_fill_current = display_fill[CELL_FAKE]
+
+                    elif col == 0:
+                        disp_fill_neighbour_left = display_fill[CELL_FAKE]
+                        disp_fill_current = display_fill[self._cells[(row,col)]]
+
+                    elif col == self._cols-1:
+                        if col % 2 == 0:
+                            disp_fill_current = display_fill[CELL_FAKE]
+                            disp_fill_neighbour_left = display_fill[self._cells[(row,col-1)]]
+    
+                        else:
+                            disp_fill_neighbour_right = display_fill[CELL_FAKE]
+                            disp_fill_current = display_fill[self._cells[(row,col)]]
+
                 else:
-                     disp_fill_current = display_fill[self._cells[(row,col)]]
-                     disp_fill_neighbour_left = display_fill[self._cells[(row,col-1)]]
-                     disp_fill_neightbour_right = display_fill[self._cells[(row,col+1)]]
-
+                    disp_fill_current = display_fill[self._cells[(row,col)]]
+                    disp_fill_neighbour_right = display_fill[self._cells[(row,col+1)]]
+                    disp_fill_neighbour_left = display_fill[self._cells[(row,col-1)]]
+                        
 
                 if even_row:
                     if even_col:
@@ -66,6 +85,8 @@ class TriangularGrid():
                             disp_fill_neighbour_left, disp_fill_current))
                         cell_disp.append("__\\")
                 else:
+                    #odd row
+
                     if even_col:
                         # left  : col -1 
                         # right: current
@@ -101,6 +122,10 @@ class TriangularGrid():
         return grid_str
 
     def set_cell(self, cell, on_else_off):
+        
+        r,c = cell
+        cell = (r+1, c+1) # transform to internal board
+
         value = CELL_OFF
         if on_else_off:
             value = CELL_ON
@@ -113,9 +138,8 @@ class TriangularGrid():
         
         self._cells[cell] = value
 
-
 if __name__ == "__main__":
-    g = TriangularGrid(10,14)
+    g = TriangularGrid(10,15)
     try:
         # g.set_cell((0,0),CELL_ON)
         # g.set_cell((1,1),CELL_ON)
@@ -123,9 +147,10 @@ if __name__ == "__main__":
     except Exception as e:
         print("Failed to iopass cells test. {}{}".format(e, traceback.format_exc()))
 
-    g.set_cell((2,3),CELL_ON)
+    g.set_cell((0,0),CELL_ON)
     g.set_cell((3,3),CELL_ON)
     g.set_cell((3,4),CELL_ON)
+    g.set_cell((9,13),CELL_ON)
 
     # g.set_cell((4,5),CELL_ON)
     print(str(g))
