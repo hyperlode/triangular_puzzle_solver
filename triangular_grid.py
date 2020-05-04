@@ -1,12 +1,37 @@
 import traceback
-
+import copy
 # isometric grid, triangular grid.
 # has one extra cell at all borders internally. 
 
-CELL_EDGE = 0  # for programatorical reasons (to have no exception on the edge of the grid)
-CELL_NOGO = 1  # not allowed --> i.e. board edge 
-CELL_ON = 2
-CELL_OFF = 3
+'''
+!!/\!!!!/\!!!!/\!!!!/
+!/!!\!!/!!\!!/!!\!!/!
+/____\/____\/____\/__
+\!!!!/\ 0,1/\    /\!!
+!\!!/00\  /02\  /  \!
+__\/____\/____\/____\
+!!/\ 1,0/\1,2 /\    /
+!/!!\  /11\  /  \  /!
+/____\/____\/____\/__
+\!!!!/\ 2,1/\    /\!!
+!\!!/20\  /  \  /  \!
+__\/____\/____\/____\
+!!/\    /\    /\    /
+!/!!\  /  \  /  \  /!
+/____\/____\/____\/__
+\!!!!/\    /\    /\!!
+!\!!/  \  /  \  /  \!
+__\/____\/____\/____\
+!!/\!!!!/\!!!!/\!!!!/
+!/!!\!!/!!\!!/!!\!!/!
+/____\/____\/____\/__
+'''
+
+CELL_EDGE = 666  # for programatorical reasons (to have no exception on the edge of the grid)
+CELL_NOGO = 4  # not allowed --> i.e. board edge 
+CELL_ON = 1
+CELL_OFF = 0
+CELL_DOUBLE_ON = 2  # if two "ON"-cells are overlayed on each other.
 
 display_fill = {CELL_EDGE:"!", CELL_NOGO:"-", CELL_ON:"O", CELL_OFF:" "}
 
@@ -51,7 +76,7 @@ class TriangularGrid():
 
         return  [self.internal_cell_to_cell(cell) for cell in valid_neighbours]
         
-    def set_cell(self, cell, on_else_off):
+    def set_cell(self, cell, on_else_off=True):
         cell = self.cell_to_internal_cell(cell)
         value = CELL_OFF
         if on_else_off:
@@ -65,10 +90,26 @@ class TriangularGrid():
         
         self._cells[cell] = value
 
+    def overlay_grid(self, grid, x_offset, y_offset, add=True):
+        # grid is just a matrix for a triangular grid with cells that are ON or OFF. 
+        
+        if add:
+            for cell, value in grid.items():
+                cell = self.cell_to_internal_cell(cell)
+                r,c = cell
+                self._cells[r+y_offset, c+x_offset] += value 
+            return self._cells
+        else:    
+
+            return_cells = copy.deepcopy(self._cells)
+            for cell, value in grid.items():
+                r,c = cell
+                return_cells[r+y_offset, c+x_offset] += value  
+            return return_cells
+          
     def __str__(self):
 
         grid_disp = []     
-
 
         for row in range(self._rows):
             even_row = row % 2 == 0
@@ -160,20 +201,23 @@ class TriangularGrid():
 
     
 if __name__ == "__main__":
-    g = TriangularGrid(10,15)
-    try:
-        # g.set_cell((0,0),CELL_ON)
-        # g.set_cell((1,1),CELL_ON)
-        pass
-    except Exception as e:
-        print("Failed to iopass cells test. {}{}".format(e, traceback.format_exc()))
 
-    g.set_cell((0,0),CELL_ON)
-    g.set_cell((3,3),CELL_ON)
-    g.set_cell((3,4),CELL_ON)
-    g.set_cell((9,13),CELL_ON)
-
-    print(g.get_neighbours((0,1)))
-
-    # g.set_cell((4,5),CELL_ON)
+    g = TriangularGrid(5,5)
     print(str(g))
+    # g = TriangularGrid(10,15)
+    # try:
+    #     # g.set_cell((0,0),CELL_ON)
+    #     # g.set_cell((1,1),CELL_ON)
+    #     pass
+    # except Exception as e:
+    #     print("Failed to iopass cells test. {}{}".format(e, traceback.format_exc()))
+
+    # g.set_cell((0,0),CELL_ON)
+    # g.set_cell((3,3),CELL_ON)
+    # g.set_cell((3,4),CELL_ON)
+    # g.set_cell((9,13),CELL_ON)
+
+    # print(g.get_neighbours((0,1)))
+
+    # # g.set_cell((4,5),CELL_ON)
+    # print(str(g))
