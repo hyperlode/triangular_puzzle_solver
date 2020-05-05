@@ -32,8 +32,9 @@ CELL_NOGO = 4  # not allowed --> i.e. board edge
 CELL_ON = 1
 CELL_OFF = 0
 CELL_DOUBLE_ON = 2  # if two "ON"-cells are overlayed on each other.
+CELL_ERROR = 667
 
-display_fill = {CELL_EDGE:"!", CELL_NOGO:"-", CELL_ON:"O", CELL_OFF:" "}
+display_fill = {CELL_EDGE:"!", CELL_NOGO:"-", CELL_ON:"O", CELL_OFF:" ", CELL_ERROR:"?"}
 
 class TriangularGrid():
 
@@ -90,21 +91,22 @@ class TriangularGrid():
         
         self._cells[cell] = value
 
-    def overlay_grid(self, grid, x_offset, y_offset, add=True):
+    def overlay_grid(self, grid, add=True):
+        # no offsets! Do a translation of the grid..
         # grid is just a matrix for a triangular grid with cells that are ON or OFF. 
         
         if add:
             for cell, value in grid.items():
                 cell = self.cell_to_internal_cell(cell)
                 r,c = cell
-                self._cells[r+y_offset, c+x_offset] += value 
+                self._cells[r+0, c+0] += value 
             return self._cells
         else:    
 
             return_cells = copy.deepcopy(self._cells)
             for cell, value in grid.items():
                 r,c = cell
-                return_cells[r+y_offset, c+x_offset] += value  
+                return_cells[r+0, c+0] += value  
             return return_cells
           
     def __str__(self):
@@ -120,7 +122,15 @@ class TriangularGrid():
                 cell_disp = []
                 even_col = col % 2 == 0
 
-                if self._cells[(row,col)] == CELL_EDGE:
+                # edge cases
+
+                if self._cells[(row,col)] > CELL_EDGE:
+
+                    disp_fill_neighbour_left = display_fill[CELL_ERROR]
+                    disp_fill_neighbour_right = display_fill[CELL_ERROR]
+                    disp_fill_current = display_fill[CELL_ERROR]
+
+                elif self._cells[(row,col)] == CELL_EDGE:
                     
                     if row == 0 or row == self._rows-1:
 
