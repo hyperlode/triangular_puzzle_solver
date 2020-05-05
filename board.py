@@ -230,6 +230,7 @@ def show_mirrored(pattern):
 
     print(str(base))
 
+
 # -----------------------------------------------------
 def show_all_base_pieces():
     base = triangular_grid.TriangularGrid(3,6)    
@@ -243,30 +244,79 @@ def show_all_pieces_mirrored():
     for piece in base_pieces_cells:
         show_mirrored(piece)
         
+def show_pattern(pattern_cells):
+    transformer = triangular_pattern.TriangularPatternOperations()
+   
+    bounding_box = transformer.get_bounding_box(pattern_cells)
+    rows = bounding_box["max_r"] + 1
+    cols = bounding_box["max_c"] + 1
+    base = triangular_grid.TriangularGrid(rows, cols)  
+    base.overlay_grid(pattern_cells)
+    print(str(base)) 
 
-def show_all_isomorphs(pattern_cells):
+
+def get_all_isomorphs(pattern_cells, delete_equal_patterns=False, show=False):
     # provide cells.
 
     transformer = triangular_pattern.TriangularPatternOperations()
 
-    base = triangular_grid.TriangularGrid(10, 15)    
 
-    # print with base piece.
-    base_and_piece  = copy.deepcopy(base)
-    display_pattern =  transformer.translate(pattern_cells, "SE", 1)
-    base_and_piece.overlay_grid(display_pattern)
-    print(str(base_and_piece))
-
-    # rotate
-    rotated_cells = transformer.rotate(pattern_cells, 120, False)
-    print(pattern_cells)
-    print(rotated_cells)
-    # print with rotated piece
-    base_and_rotated_piece  = copy.deepcopy(base)
-    rotated_cells = transformer.translate(rotated_cells, "SE", 4)
-    base_and_rotated_piece.overlay_grid(rotated_cells)
-    print(str(base_and_rotated_piece))
+    resulting_patterns = []
     
+    # rotate all
+    for degrees in range (0,360,60):
+        resulting_patterns.append(transformer.rotate(pattern_cells, degrees, False))
+
+    # rotate mirrored
+    mirrored = transformer.mirror(pattern_cells, False, True)
+    
+    for degrees in range (0,360,60):
+        resulting_patterns.append(transformer.rotate(mirrored, degrees, False))
+
+    ### AFTERMATH
+
+    # crop all to most compact form
+    resulting_patterns  = [ transformer.crop_pattern_to_bounding_box(pattern) for pattern in resulting_patterns]
+
+    # delete equals
+    if delete_equal_patterns:
+        resulting_patterns = transformer.delete_equal_patterns(resulting_patterns)
+    
+
+    if show:
+        arrange_patterns_on_a_grid(resulting_patterns, 10)
+    
+    
+    return resulting_patterns
+
+
+def show_isomorphs_of_all_patterns(patterns,  delete_equal_patterns=False):
+    # transformer = triangular_pattern.TriangularPatternOperations()
+    resulting_patterns = []
+
+    for pattern in patterns:
+        resulting_patterns.extend(get_all_isomorphs(pattern, delete_equal_patterns))
+
+    arrange_patterns_on_a_grid(resulting_patterns, 6)
+
+    print("Number of patterns: {}".format(len(resulting_patterns)))
+
+
+def arrange_patterns_on_a_grid(patterns, patterns_per_col):
+    transformer = triangular_pattern.TriangularPatternOperations()
+
+    arranged_patterns = transformer.arrange_patterns_for_no_overlap(patterns, patterns_per_col)
+    
+    # create fitting field.
+    bounding_box = transformer.get_combined_bounding_box(arranged_patterns)
+    rows = bounding_box["max_r"] + 1
+    cols = bounding_box["max_c"] + 1
+    base = triangular_grid.TriangularGrid(rows, cols)   
+    
+    for pattern in arranged_patterns:
+        base.overlay_grid(pattern)
+    
+    print(str(base))
 
 
 if __name__ == "__main__":
@@ -274,9 +324,15 @@ if __name__ == "__main__":
     print(str(puzzle_board))
 
     # show_all_base_pieces()    
-    # show_all_isomorphs(piece_1)
+    # show_all_pieces_mirrored()
+    # show_mirrored(piece_0)
+    # transformer = triangular_pattern.TriangularPatternOperations()
+    # mirrored = transformer.mirror(piece_0, horizontal_else_vertical=False,crop=True)
+    # show_pattern(mirrored)
 
-    show_all_pieces_mirrored()
+
+    show_isomorphs_of_all_patterns(base_pieces_cells, True)
+
 
 
     
