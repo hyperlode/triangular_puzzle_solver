@@ -171,6 +171,7 @@ class TriangularPatternOperations():
     def normalize_pattern(self, pattern):
         # translate to make sure there are no negaive coordinates.
         # move as much to topleft as possible without negative numbers.
+        # always make sure the top row is occupied (row 0). Give priority over col 0 !
 
         check = True
         while check:
@@ -195,7 +196,7 @@ class TriangularPatternOperations():
         pattern = self.crop_pattern_to_bounding_box(pattern)
         return pattern
 
-    def arrange_patterns_for_no_overlap(self, patterns, patterns_per_arrangement_row):
+    def arrange_patterns_for_no_overlap(self, patterns, patterns_per_arrangement_row, spacing=0):
         # will translate all patterns so that their coordinates do not overlap
         # effectively preparing them to be put spaciously on a grid. 
 
@@ -211,23 +212,24 @@ class TriangularPatternOperations():
             col_count += 1
 
             bb = self.get_bounding_box(pattern)
+            print("bbbbb{}".format(bb))
 
             # check horizontal spacing
-            while right_col + 1 >= bb["min_c"]:
+            while right_col + spacing > bb["min_c"]:
                 pattern = self.translate(pattern, "E")
                 bb = self.get_bounding_box(pattern)
             
             # update boundary
-            right_col = bb["max_c"]
+            right_col = bb["max_c"] + 1 
 
             # check vertical spacing
-            while bottom_row + 1 >= bb["min_r"]:
+            while bottom_row + spacing > bb["min_r"]:
                 pattern = self.translate(pattern, "S")
                 bb = self.get_bounding_box(pattern)
             
             # update boundary
-            if bb["max_r"] > next_bottom_row:
-                next_bottom_row = bb["max_r"]
+            if bb["max_r"] >= next_bottom_row:
+                next_bottom_row = bb["max_r"] + 1
 
             
             if col_count == patterns_per_arrangement_row:
@@ -245,9 +247,9 @@ class TriangularPatternOperations():
     def get_combined_bounding_box(self, patterns):
         bounding_box = self.get_bounding_box(patterns[0])
         for pattern in patterns[1:]:
-            
             extra_bounding_box  = self.get_bounding_box(pattern)
             bounding_box = { k:(v if  v > bounding_box[k] else bounding_box[k]) for k,v in extra_bounding_box.items()}
+
         return bounding_box
 
     def get_meta_data(self, pattern):
@@ -258,8 +260,6 @@ class TriangularPatternOperations():
     
     def get_bounding_box(self, pattern):
         # predefined dict already has all the keys populated with values.
-
-        
         min_c = None
         min_r = None
         max_c = None
@@ -327,7 +327,7 @@ class TriangularPatternOperations():
         return translated
 
     
-    def rotate(self, pattern, degrees, cw_else_ccw):
+    def rotate(self, pattern, degrees, cw_else_ccw, normalize=True):
         # will return normalize pattern. = minimum bounding box and no negatives.
 
         if degrees not in [0, 60,120,180,240,300,360]:
@@ -352,7 +352,9 @@ class TriangularPatternOperations():
                 transformed[ rotation_cell_remap[cell] ] = pattern[cell]
             pattern = copy.deepcopy(transformed)
 
-        transformed = self.normalize_pattern(transformed)
+        if normalize:
+            transformed = self.normalize_pattern(transformed)
+
         return transformed
         
 

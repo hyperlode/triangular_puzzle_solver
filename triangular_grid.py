@@ -27,14 +27,26 @@ __\/____\/____\/____\
 /____\/____\/____\/__
 '''
 
-CELL_EDGE = 666  # for programatorical reasons (to have no exception on the edge of the grid)
+CELL_EDGE = 8  # for programatorical reasons (to have no exception on the edge of the grid)
 CELL_NOGO = 4  # not allowed --> i.e. board edge 
 CELL_ON = 1
 CELL_OFF = 0
-CELL_DOUBLE_ON = 2  # if two "ON"-cells are overlayed on each other.
+# CELL_DOUBLE_ON = 2  # if two "ON"-cells are overlayed on each other.
 CELL_ERROR = 667
+CELL_PIECE_COLLISION_WITH_EDGE= 9
+CELL_PIECE_COLLISION_WITH_NOGO = 5
+CELL_PIECE_COLLISION_WITH_PIECE= 2
 
-display_fill = {CELL_EDGE:"!", CELL_NOGO:"-", CELL_ON:"O", CELL_OFF:" ", CELL_ERROR:"?"}
+
+display_fill = {CELL_EDGE:"!", 
+    CELL_NOGO:"-", 
+    CELL_ON:"O", 
+    CELL_OFF:" ", 
+    CELL_PIECE_COLLISION_WITH_EDGE:"?", 
+    CELL_PIECE_COLLISION_WITH_NOGO:"W", 
+    CELL_PIECE_COLLISION_WITH_PIECE:"X",
+    CELL_ERROR: "%",
+    }
 
 class TriangularGrid():
 
@@ -124,40 +136,47 @@ class TriangularGrid():
                 even_col = col % 2 == 0
 
                 # edge cases
+                try:
 
-                if self._cells[(row,col)] > CELL_EDGE:
+                    if self._cells[(row,col)] > CELL_EDGE:
 
-                    disp_fill_neighbour_left = display_fill[CELL_ERROR]
-                    disp_fill_neighbour_right = display_fill[CELL_ERROR]
-                    disp_fill_current = display_fill[CELL_ERROR]
+                        disp_fill_neighbour_left = display_fill[CELL_PIECE_COLLISION_WITH_EDGE]
+                        disp_fill_neighbour_right = display_fill[CELL_PIECE_COLLISION_WITH_EDGE]
+                        disp_fill_current = display_fill[CELL_PIECE_COLLISION_WITH_EDGE]
 
-                elif self._cells[(row,col)] == CELL_EDGE:
-                    
-                    if row == 0 or row == self._rows-1:
+                    elif self._cells[(row,col)] == CELL_EDGE:
+                        
+                        if row == 0 or row == self._rows-1:
 
-                        disp_fill_neighbour_left = display_fill[CELL_EDGE]
-                        disp_fill_neighbour_right = display_fill[CELL_EDGE]
-                        disp_fill_current = display_fill[CELL_EDGE]
-
-                    elif col == 0:
-                        disp_fill_neighbour_left = display_fill[CELL_EDGE]
-                        disp_fill_current = display_fill[self._cells[(row,col)]]
-
-                    elif col == self._cols-1:
-                        if col % 2 == 0:
-                            disp_fill_current = display_fill[CELL_EDGE]
-                            disp_fill_neighbour_left = display_fill[self._cells[(row,col-1)]]
-    
-                        else:
+                            disp_fill_neighbour_left = display_fill[CELL_EDGE]
                             disp_fill_neighbour_right = display_fill[CELL_EDGE]
-                            disp_fill_neighbour_left = display_fill[self._cells[(row,col-1)]]
+                            disp_fill_current = display_fill[CELL_EDGE]
+
+                        elif col == 0:
+                            disp_fill_neighbour_left = display_fill[CELL_EDGE]
                             disp_fill_current = display_fill[self._cells[(row,col)]]
 
-                else:
-                    disp_fill_current = display_fill[self._cells[(row,col)]]
-                    disp_fill_neighbour_right = display_fill[self._cells[(row,col+1)]]
-                    disp_fill_neighbour_left = display_fill[self._cells[(row,col-1)]]
-                        
+                        elif col == self._cols-1:
+                            if col % 2 == 0:
+                                disp_fill_current = display_fill[CELL_EDGE]
+                                disp_fill_neighbour_left = display_fill[self._cells[(row,col-1)]]
+        
+                            else:
+                                disp_fill_neighbour_right = display_fill[CELL_EDGE]
+                                disp_fill_neighbour_left = display_fill[self._cells[(row,col-1)]]
+                                disp_fill_current = display_fill[self._cells[(row,col)]]
+
+                    else:
+                        disp_fill_current = display_fill[self._cells[(row,col)]]
+                        disp_fill_neighbour_right = display_fill[self._cells[(row,col+1)]]
+                        disp_fill_neighbour_left = display_fill[self._cells[(row,col-1)]]
+                except Exception as e:
+                    print("Error: {} . Info: (row,col):({},{}) cell value = {}".format(traceback.format_exc(), row, col, self._cells[(row,col)]))
+                    # raise
+                    disp_fill_current = display_fill[CELL_ERROR]
+                    disp_fill_neighbour_right = display_fill[CELL_ERROR]
+                    disp_fill_neighbour_left = display_fill[CELL_ERROR]
+
 
                 if even_row:
                     if even_col:

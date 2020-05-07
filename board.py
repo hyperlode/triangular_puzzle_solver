@@ -70,16 +70,17 @@ piece_9 = {
     (1,3):CELL_ON,
 } 
 
-#  .
-#  xxx
-#  xxx
+#  
+#  .xxx
+#   xxx
+
 piece_1 = {
-    (1,0):CELL_ON,
+    (0,1):CELL_ON,
+    (0,2):CELL_ON,
+    (0,3):CELL_ON,
     (1,1):CELL_ON,
     (1,2):CELL_ON,
-    (2,0):CELL_ON,
-    (2,1):CELL_ON,
-    (2,2):CELL_ON,
+    (1,3):CELL_ON,
 } 
 
 
@@ -218,10 +219,10 @@ class PuzzleSolver():
     # Save states for multiprocessing or interruptions. 
     # state = unique descriptive string with the sequence of all 11 (not 12) pieces on one of the five (prepopulated with the hexagon) boards
         
-    def __init__(self):
+    def __init__(self, pieces, board, pieces_prepared=False):
         
-        # craete five base boards.
 
+        # craete five base boards.
         # hexagon postions: 
         pass
 
@@ -233,10 +234,53 @@ class PuzzleSolver():
         # As there are too ma
 
 
+# preparation of puzzle pieces:
+
+# step 1: make sure the pieces are sorted from least amount of orientation to most.
+# step 2: prepare all pieces. (double array, all forms of a piece per array)
+def prepare_pieces(base_pieces, show=False):
+    # pieces = array with patterns. Return all orientations by rotating and mirroring, per piece, delete identical orientations)
+    
+    transformer = triangular_pattern.TriangularPatternOperations()
+    
+    all_unique_pieces_orientations = []
+    for pattern in base_pieces_cells:
+        transformed = transformer.get_all_orientations(pattern, True)
+
+        if show:
+            for piece in transformed:
+                show_pattern_on_grid(piece)
+        all_unique_pieces_orientations.append(transformed)
+    return all_unique_pieces_orientations
+
+# step 3: choose first piece as the master piece, we will put it on the board to avoid doing double work.
+def prepare_base_boards(board, piece, positions):
+    # positions is an array containing translations arrays (containing  tuples like :(direction, steps))
+    # will create a base board with the piece in it for every provided position.
+
+    boards = []
+  
+    for translations in positions:
+        board_copy = copy.deepcopy(board)
+
+        # take the prepared hexagon 
+        piece_positioned = piece
+        for translation in translations:
+            
+            piece_positioned = transformer.translate(piece_positioned,translation[0],translation[1])
+            # prepare dedicated puzzle board (add first piece)
+        board_copy.overlay_grid(piece_positioned)
+
+        boards.append(board_copy)
+
+    return boards
+
 def create_puzzle_board():
     base = triangular_grid.TriangularGrid(8,13) # the size of the board. 
     base.overlay_grid(base_board)
     return base
+
+
 
 def show_mirrored(pattern):
         
@@ -269,9 +313,11 @@ def show_all_pieces_mirrored():
     for piece in base_pieces_cells:
         show_mirrored(piece)
 
+
+
 # show on triangular grid ------------------
 
-def show_pattern(pattern_cells, empty_spacing=0):
+def show_pattern_on_grid(pattern_cells, empty_spacing=0):
     transformer = triangular_pattern.TriangularPatternOperations()
    
     bounding_box = transformer.get_bounding_box(pattern_cells)
@@ -279,7 +325,7 @@ def show_pattern(pattern_cells, empty_spacing=0):
     cols = bounding_box["max_c"] + 1 + empty_spacing * 2
 
     if empty_spacing > 0:
-        pattern_cells = transformer.translate(pattern_cells,"SE")
+        pattern_cells = transformer.translate(pattern_cells,"SE", empty_spacing)
         # pattern_cells = transformer.translate(pattern_cells,"E")
 
     base = triangular_grid.TriangularGrid(rows, cols)  
@@ -292,46 +338,56 @@ def show_orientations_of_pattern(pattern_cells, delete_equal_patterns=False):
 
     resulting_patterns = transformer.get_all_orientations(pattern_cells, delete_equal_patterns)
     
-    show_patterns_on_grid(resulting_patterns, 6)
+    show_patterns_on_grid(resulting_patterns, 6, 1)
     print("Number of patterns: {}".format(len(resulting_patterns)))
 
 
 def show_orientations_of_all_patterns(patterns,  delete_equal_patterns=False, show_one_pattern_at_a_time=False):
-    # transformer = triangular_pattern.TriangularPatternOperations()
+    transformer = triangular_pattern.TriangularPatternOperations()
     resulting_patterns = []
 
-    for pattern in patterns:
-        resulting_patterns.extend(get_all_orientations(pattern, delete_equal_patterns, show_one_pattern_at_a_time))
+    if show_one_pattern_at_a_time:
+        for pattern in patterns:
+            show_orientations_of_pattern(pattern, delete_equal_patterns)
+    else:
 
-    if not show_one_pattern_at_a_time:
-        show_patterns_on_grid(resulting_patterns, 6)
-        print("Number of patterns: {}".format(len(resulting_patterns)))
+        for pattern in patterns:
+            resulting_patterns.extend(transformer.get_all_orientations(pattern, delete_equal_patterns))
 
-def show_patterns_on_grid(patterns, patterns_per_col):
+        if not show_one_pattern_at_a_time:
+            show_patterns_on_grid(resulting_patterns, 10, 2)
+            print("Number of patterns: {}".format(len(resulting_patterns)))
+        
+
+def show_patterns_on_grid(patterns, patterns_per_col, spacing=0):
     transformer = triangular_pattern.TriangularPatternOperations()
-
+    print(patterns)
     arranged_patterns = transformer.arrange_patterns_for_no_overlap(patterns, patterns_per_col)
     
-    # print(patterns)
+    print(arranged_patterns)
     # create fitting field.
     bounding_box = transformer.get_combined_bounding_box(arranged_patterns)
-    rows = bounding_box["max_r"] + 1
+
+    print(bounding_box)
+    rows = bounding_box["max_r"] + 1  # rows one more than index.
     cols = bounding_box["max_c"] + 1
+    
+    print(rows)
+    print(cols)
     base = triangular_grid.TriangularGrid(rows, cols)   
     
     for pattern in arranged_patterns:
         base.overlay_grid(pattern)
     
     print(str(base))     
-
     
 def rotate_and_show(pattern, degrees):
     transformer = triangular_pattern.TriangularPatternOperations()
     rotated = transformer.rotate(pattern,degrees,True)
     
-    show_pattern(rotated,0)
-    show_pattern(rotated,1)
-    show_pattern(rotated,2)
+    show_pattern_on_grid(rotated,0)
+    show_pattern_on_grid(rotated,1)
+    show_pattern_on_grid(rotated,2)
 
 def test():
     pattern_cells = {(0,0):CELL_ON}
@@ -348,19 +404,44 @@ def test():
 
 if __name__ == "__main__":
 
+    transformer = triangular_pattern.TriangularPatternOperations()
+    
     puzzle_board = create_puzzle_board()
-    print(str(puzzle_board))
+    # print(str(puzzle_board))
     
     # show_all_base_pieces()    
     # show_all_pieces_mirrored()
+    # transformer = triangular_pattern.TriangularPatternOperations()
+    #show_orientations_of_pattern(base_pieces_cells[5],True)
+    #show_pattern_on_grid(base_pieces_cells[1])
+    # show_patterns_on_grid(base_pieces_cells[:2],0)
     
-    
-    show_orientations_of_pattern(base_pieces_cells[0],True)
-
-
     # show_orientations_of_all_patterns(base_pieces_cells, True, True) # show all patterns differntly
-    # show_orientations_of_all_patterns(base_pieces_cells, True, True)  # show all patterns on one big field
+    # show_orientations_of_all_patterns(base_pieces_cells, True, False)  # show all patterns on one big field
 
 
+    # prepare puzzle pieces
+    prepared_patterns = prepare_pieces(base_pieces_cells)
+    # for patterns in prepared_patterns:
+    #     print(patterns)
+
+    hexagon_translations_for_all_possible_positions_on_board = [
+            [("E",3),],
+            [("E",3),("SE",1)],
+            [("E",3),("SE",2)],
+            [("E",2),("SE",2)],
+            [("E",1),("SE",3)],
+        ]
+    hexagon = prepared_patterns[0][0]
+
+    # prepare base board
+    puzzle_board = create_puzzle_board()
+
+    # get all base boards.
+    starting_puzzle_boards = prepare_base_boards(puzzle_board, hexagon, hexagon_translations_for_all_possible_positions_on_board )
+    
+    for board in starting_puzzle_boards:
+
+        print(str(board))
 
     
