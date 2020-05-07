@@ -92,7 +92,7 @@ class TriangularGrid():
         self._cells[cell] = value
 
     def overlay_grid(self, grid, add=True):
-        # no offsets! Do a translation of the grid..
+        # no offsets! Do a translation of the grid before you provide it here.
         # grid is just a matrix for a triangular grid with cells that are ON or OFF. 
         
         if add:

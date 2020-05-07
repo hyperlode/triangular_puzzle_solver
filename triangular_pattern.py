@@ -93,6 +93,33 @@ class TriangularPatternOperations():
         pass
         # self._cells = copy.deepcopy(cells)
 
+    
+    def get_all_orientations(self, pattern, delete_equal_patterns=False):
+        # provide cells.
+
+        resulting_patterns = []
+        
+        # rotate all
+        for degrees in range (0,360,60):
+            resulting_patterns.append(self.rotate(pattern, degrees, False))
+
+        # rotate mirrored
+        mirrored = self.mirror(pattern, False, True)
+        
+        for degrees in range (0,360,60):
+            resulting_patterns.append(self.rotate(mirrored, degrees, False))
+
+        ### AFTERMATH
+
+        # crop all to most compact form
+        resulting_patterns  = [ self.normalize_pattern(pattern) for pattern in resulting_patterns]
+
+        # delete equals
+        if delete_equal_patterns:
+            resulting_patterns = self.delete_equal_patterns(resulting_patterns)
+        
+        return resulting_patterns
+    
     def delete_equal_patterns(self, patterns):
         # patterns is a list of patterns. (each pattern is a dict)
         # will only delete pattersn with exact same orientations!
@@ -109,15 +136,13 @@ class TriangularPatternOperations():
                 filtered.append(p)
         return filtered
 
-
     def crop_pattern_to_bounding_box(self, pattern):
         # play it save, use "normalize"
         # assume all coordinates are positive. (if not, use normalize)
         bb = self.get_bounding_box(pattern)
         cropped = {}
         
-
-        # this is a little hack, because we cannot just move things around the triagular grid like in a square one. If you move an odd sum of rows and colums, the shape changes!
+        # this is a little hack, because we cannot just move things around the triagular grid like in a square one. If you would move an odd sum of rows and colums, the shape changes!
         rows_even = False
         if bb["min_r"] % 2 == 0:
             # even, no problemo
@@ -138,7 +163,8 @@ class TriangularPatternOperations():
 
         for cell in pattern:
             r,c = cell
-            cropped[(r - bb["min_r"] + extra_space, c - bb["min_c"])] = pattern[cell]
+            # add extra space to column. We want it stick to top row.
+            cropped[(r - bb["min_r"] , c - bb["min_c"]+ extra_space)] = pattern[cell]
 
         return cropped
 
