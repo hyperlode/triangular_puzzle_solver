@@ -111,6 +111,8 @@ class TriangularPatternOperations():
 
 
     def crop_pattern_to_bounding_box(self, pattern):
+        # play it save, use "normalize"
+        # assume all coordinates are positive. (if not, use normalize)
         bb = self.get_bounding_box(pattern)
         cropped = {}
         
@@ -130,8 +132,8 @@ class TriangularPatternOperations():
             # perfect, move it.
             extra_space = 0
         else:
-            # if one even and the other one odd.
-            # go against top row, but let one space on the left side.
+            # if one (of rows and cols) is even and the other one odd.
+            # go against top row, but leave one space on the left side.
             extra_space = 1
 
         for cell in pattern:
@@ -140,7 +142,37 @@ class TriangularPatternOperations():
 
         return cropped
 
+    def normalize_pattern(self, pattern):
+        # translate to make sure there are no negaive coordinates.
+        # move as much to topleft as possible without negative numbers.
+
+        check = True
+        while check:
+            move_south = False
+            move_east = False
+            for cell in pattern:
+                r,c = cell
+                if r < 0:
+                    move_south = True
+                if c < 0:
+                    move_east = True
+
+            if move_south:
+                pattern = self.translate(pattern,"S")
+                
+            if move_east:
+                pattern = self.translate(pattern,"E")
+
+            if not move_south and not move_east:
+                check = False
+
+        pattern = self.crop_pattern_to_bounding_box(pattern)
+        return pattern
+
     def arrange_patterns_for_no_overlap(self, patterns, patterns_per_arrangement_row):
+        # will translate all patterns so that their coordinates do not overlap
+        # effectively preparing them to be put spaciously on a grid. 
+
         arranged_patterns = []
 
         right_col = 0
@@ -241,7 +273,7 @@ class TriangularPatternOperations():
                 # mirrored[r , c + 1 ] = pattern[cell]  # yes, col + 1 to mirror vertically. 
        
         if crop:
-            mirrored = self.crop_pattern_to_bounding_box(mirrored)
+            mirrored = self.normalize_pattern(mirrored)
 
         return mirrored
 
@@ -268,7 +300,9 @@ class TriangularPatternOperations():
         
         return translated
 
+    
     def rotate(self, pattern, degrees, cw_else_ccw):
+        # will return normalize pattern. = minimum bounding box and no negatives.
 
         if degrees not in [0, 60,120,180,240,300,360]:
             print("degress has to be in [0,60,120,180,240,300]range")
@@ -280,11 +314,9 @@ class TriangularPatternOperations():
 
         iterations = int(degrees / 60)
 
-
         rotation_cell_remap = transformation_CCW
         if cw_else_ccw:
             rotation_cell_remap = transformation_CW
-
 
         # rotate multiple times to reach required rotation.
         for _ in range(iterations):
@@ -293,6 +325,8 @@ class TriangularPatternOperations():
             for cell in pattern:
                 transformed[ rotation_cell_remap[cell] ] = pattern[cell]
             pattern = copy.deepcopy(transformed)
+
+        transformed = self.normalize_pattern(transformed)
         return transformed
         
 

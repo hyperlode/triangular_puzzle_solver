@@ -112,6 +112,7 @@ class TriangularGrid():
     def __str__(self):
 
         grid_disp = []     
+        # print(self._cells)
 
         for row in range(self._rows):
             even_row = row % 2 == 0
@@ -149,6 +150,7 @@ class TriangularGrid():
     
                         else:
                             disp_fill_neighbour_right = display_fill[CELL_EDGE]
+                            disp_fill_neighbour_left = display_fill[self._cells[(row,col-1)]]
                             disp_fill_current = display_fill[self._cells[(row,col)]]
 
                 else:
