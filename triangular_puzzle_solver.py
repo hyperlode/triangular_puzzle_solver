@@ -27,8 +27,55 @@ class PuzzleSolver():
 
     def solve(self):
         pass
-    
-    
+        
+    def next_step(self, board, pieces_with_orientations, state, last_tried, unused_pieces):
+        # state  = sequence [(firstpieceindex,orientationindex),(secondpieceindex,orientationindex),...]
+
+        # assume board populated according to state.
+        if last_tried is None:
+
+            # take next piece with first iteration
+                # search next piece
+            try_piece_index = unused_pieces.pop(0)
+            print(unused_pieces)
+            
+            orientation_index_offset = 0
+        else:
+            try_piece_index, orientation_index_offset= last_tried
+            
+
+        # try orientations.
+        try_pieces = pieces_with_orientations[try_piece_index][orientation_index_offset:]
+
+        success, orientation_index = self.try_pieces_on_board(board, try_pieces  )
+
+        if success:
+            orientation_index += orientation_index_offset
+            state.append((try_piece_index, orientation_index))
+            return True, state
+        else:
+            return False, state
+
+
+    def try_pieces_on_board(self, board, pieces):
+        # check if any of the pieces fits on top left of board. if so, return new board and piece index.
+        # else, return False
+        index = 0
+
+        while index < len(pieces):
+            try_piece = pieces[index]
+            test_board = copy.deepcopy(board)
+            
+            success = self.try_piece_on_board(test_board, try_piece)
+            print(str(test_board))
+
+            if success:
+                return True, index
+            
+            index+=1
+
+        return False, None
+
     def try_piece_on_board(self, board, piece):
         
         # pieces are added to board from top left to bottom right.
@@ -38,23 +85,24 @@ class PuzzleSolver():
 
         # get next free cell on board.
         free_cell = board.get_most_top_left_free_cell()
-        print("free_cell:{}".format(free_cell))
+        
+        # print("free_cell:{}".format(free_cell))
         if free_cell is None:
             print("solution found!")
-            print(board._cells())
+            print(board.get_added_patterns())
             raise GridFullException
         
         # 2 check if \/(down) or /\ (up)  triangle
         free_cell_is_up_triangle = self.transformer.cell_up_else_down_facing_triangle(free_cell)
 
-        print("up facing triangle? :{}".format(free_cell_is_up_triangle))
+        # print("up facing triangle? :{}".format(free_cell_is_up_triangle))
 
         # check if piece works has good starting cell (get top left cell)
         piece_top_left_cell = self.transformer.get_most_top_left_cell_coordinate(piece)
-        print("piece top left cell:{}".format(piece_top_left_cell))
+        # print("piece top left cell:{}".format(piece_top_left_cell))
 
         piece_top_left_is_up_triangle = self.transformer.cell_up_else_down_facing_triangle(piece_top_left_cell)
-        print("up facing triangle? :{}".format(free_cell_is_up_triangle))
+        # print("up facing triangle? :{}".format(free_cell_is_up_triangle))
 
         # must be equal to have a chance to match.
         if free_cell_is_up_triangle != piece_top_left_is_up_triangle:
@@ -70,11 +118,8 @@ class PuzzleSolver():
 
         diff = (rb - rp, cb - cp)  # can contain negative values (when testing non fitting pieces)! Warning: I already forsee situation where piece can get out of the board limits.
         
-        print("diff: {}".format(diff))
+        # print("diff: {}".format(diff))
         translated_piece = self.transformer.translate_manual(piece, diff)
-
-
-
 
         # overlay pattern
         board.add_pattern(translated_piece)
