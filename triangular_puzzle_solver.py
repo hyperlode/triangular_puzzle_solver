@@ -2,7 +2,6 @@ import triangular_grid
 import triangular_pattern
 import copy
 
-
 class PuzzleSolver():
     # the puzzle contais twelve pieces that need to fit in certain pattern. 
     # all pieces can be flipped (ake. there is no front or backside) (2 sides)
@@ -30,14 +29,99 @@ class PuzzleSolver():
         pass
     
     
-    # def try_piece_on_board(self, board, piece):
-    #     # 1 get 
+    def try_piece_on_board(self, board, piece):
+        
+        # pieces are added to board from top left to bottom right.
+        # check if piece fits in top left gap. (do not rotate or mirror piece. This is a simple operation.)
+        
+        # assume piece to be normalized. (i.e. top left coordinate as close to (0,0) as possible)
 
+        # get next free cell on board.
+        free_cell = board.get_most_top_left_free_cell()
+        print("free_cell:{}".format(free_cell))
+        if free_cell is None:
+            print("solution found!")
+            print(board._cells())
+            raise GridFullException
+        
+        # 2 check if \/(down) or /\ (up)  triangle
+        free_cell_is_up_triangle = self.transformer.cell_up_else_down_facing_triangle(free_cell)
+
+        print("up facing triangle? :{}".format(free_cell_is_up_triangle))
+
+        # check if piece works has good starting cell (get top left cell)
+        piece_top_left_cell = self.transformer.get_most_top_left_cell_coordinate(piece)
+        print("piece top left cell:{}".format(piece_top_left_cell))
+
+        piece_top_left_is_up_triangle = self.transformer.cell_up_else_down_facing_triangle(piece_top_left_cell)
+        print("up facing triangle? :{}".format(free_cell_is_up_triangle))
+
+        # must be equal to have a chance to match.
+        if free_cell_is_up_triangle != piece_top_left_is_up_triangle:
+            return False
+
+        # if ok, translate pattern to position
+        # get top left cell diff
+
+        # diff = tuple(map(operator.sub, , ))
+
+        rb, cb = free_cell
+        rp, cp = piece_top_left_cell
+
+        diff = (rb - rp, cb - cp)  # can contain negative values (when testing non fitting pieces)! Warning: I already forsee situation where piece can get out of the board limits.
+        
+        print("diff: {}".format(diff))
+        translated_piece = self.transformer.translate_manual(piece, diff)
+
+
+
+
+        # overlay pattern
+        board.add_pattern(translated_piece)
+
+        # check if legal. 
+        legal = board.is_board_legal()
+
+        if not legal:
+            return False
+
+        return True
+
+    # def run_through_all(self, boards, pieces_with_orientations):
+
+    #     # can be more than one starting board
+      
+    #     for board in boards:
+    #         piece_index = len(board.get_added_patterns()) - 1  # skip the first piece if it's already implemented in the boards.
+    #         orientation_per_piece = [0 for piece in range(pieces_with_orientations)]      
+    #         board_per_piece.append(copy.deepcopy(board))
+
+    #         for piece_index in range(pieces_with_orientations):
+    #             piece_orientation_index = orientation_per_piece[piece_index]
+    #             piece_to_be_added = pieces_with_orientations[piece_index][piece_orientation_index]
+
+    #             board_for_piece_to_be_added = copy.deepcopy(board_per_piece[piece_index - 1])
+
+    #             successs = self.try_piece_on_board(board_for_piece_to_be_added,piece_to_be_added)
+
+    #             if success:
+    #                 board_per_piece.append()
+    #                 next 
+
+
+
+
+        
+    def check_winning_board(self, board):
+        # if not board.is_board_legal()
+        #     return False
+
+        return board.all_cells_occupied()
 
     # preparation of puzzle pieces:
     def create_empty_base_board(self, rows, cols, grid_pattern):
         base = triangular_grid.TriangularGrid(rows, cols) # the size of the board.   (8,13)
-        base.overlay_grid(grid_pattern)
+        base.add_pattern(grid_pattern)
         return base
 
     # step 1: make sure the pieces are sorted from least amount of orientation to most.
@@ -73,7 +157,7 @@ class PuzzleSolver():
                 
                 piece_positioned = self.transformer.translate(piece_positioned,translation[0],translation[1])
                 # prepare dedicated puzzle board (add first piece)
-            board_copy.overlay_grid(piece_positioned)
+            board_copy.add_pattern(piece_positioned)
 
             boards.append(board_copy)
 
@@ -97,9 +181,9 @@ def show_mirrored(pattern):
     cols = bounding_box["max_c"] + 1
     base = triangular_grid.TriangularGrid(rows, cols)    
 
-    base.overlay_grid(pattern)
-    base.overlay_grid(horizontal)
-    base.overlay_grid(vertical)
+    base.add_pattern(pattern)
+    base.add_pattern(horizontal)
+    base.add_pattern(vertical)
 
     print(str(base))
 
@@ -119,7 +203,7 @@ def show_pattern_on_grid(pattern_cells, empty_spacing=0):
         # pattern_cells = transformer.translate(pattern_cells,"E")
 
     base = triangular_grid.TriangularGrid(rows, cols)  
-    base.overlay_grid(pattern_cells)
+    base.add_pattern(pattern_cells)
     print(str(base)) 
 
 
@@ -167,7 +251,7 @@ def show_patterns_on_grid(patterns, patterns_per_col, spacing=0):
     base = triangular_grid.TriangularGrid(rows, cols)   
     
     for pattern in arranged_patterns:
-        base.overlay_grid(pattern)
+        base.add_pattern(pattern)
     
     print(str(base))     
     
@@ -187,7 +271,7 @@ def test():
     cols = 2
 
     base = triangular_grid.TriangularGrid(rows, cols)  
-    base.overlay_grid(pattern_cells)
+    base.add_pattern(pattern_cells)
     print(str(base)) 
 
 def general_tests_with_patterns():

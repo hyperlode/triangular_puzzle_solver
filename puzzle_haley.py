@@ -229,3 +229,4 @@ if __name__ == "__main__":
     for board in starting_puzzle_boards:
 
         print(str(board))
+        

@@ -37,6 +37,8 @@ CELL_PIECE_COLLISION_WITH_EDGE= 9
 CELL_PIECE_COLLISION_WITH_NOGO = 5
 CELL_PIECE_COLLISION_WITH_PIECE= 2
 
+LEGAL_CELLS = [CELL_EDGE, CELL_NOGO, CELL_ON, CELL_OFF]
+
 
 display_fill = {CELL_EDGE:"!", 
     CELL_NOGO:"-", 
@@ -64,6 +66,39 @@ class TriangularGrid():
                     self._cells[(row, col)] = CELL_EDGE
                 else:
                     self._cells[(row, col)] = CELL_OFF
+        
+        self._added_patterns = []
+
+    def is_board_legal(self):
+        # check for collisions
+        for v in self._cells.values():
+            if v not in LEGAL_CELLS:
+                return False
+        return True
+
+    def all_cells_occupied(self):
+        # assume legal board
+        # will return False if empty cells...
+
+        for v in self._cells.values():
+            if v == CELL_OFF:
+                return False
+        return True
+        
+    def get_most_top_left_free_cell(self):
+        # get most top row.
+        # of most top row, get most left col.
+
+        # I'm lucky, this is standard behaviour. tuples will be sorted first by first el, then second el.
+        # cells = sorted(list(self._cells))
+        for r in range(self._rows):
+            for c in range(self._cols):
+                if self._cells[(r,c)] == CELL_OFF:
+                    return self.internal_cell_to_cell((r,c))
+        
+        return None  # no free cells: means basically a full grid. in puzzle solving, that means: winner!
+
+
 
     def cell_to_internal_cell(self, cell):
  
@@ -102,23 +137,45 @@ class TriangularGrid():
             raise NoGoCellException
         
         self._cells[cell] = value
+        
+    def get_added_patterns(self):
+        # get in sequence of addition. 
+        return self._added_patterns
 
-    def overlay_grid(self, grid, add=True):
-        # no offsets! Do a translation of the grid before you provide it here.
-        # grid is just a matrix for a triangular grid with cells that are ON or OFF. 
+    def add_pattern(self, pattern, add=True, neglect_outside_board_errors=True):
+        # no offsets! Do a translation of the pattern before you provide it here.
+        # pattern is just a matrix for a triangular pattern with cells that are ON or OFF. 
         
         if add:
-            for cell, value in grid.items():
+            for cell, value in pattern.items():
                 cell = self.cell_to_internal_cell(cell)
                 r,c = cell
-                self._cells[r+0, c+0] += value 
+
+                try:
+                    self._cells[(r, c)] += value 
+                except KeyError as e:
+                    # outside boundaries, but we don't care. We just don't add it. As this is already further reachign than the border around the board, there are most probably already some illegal squares there. 
+                    if not neglect_outside_board_errors:
+                        print(e)
+                        raise                    
+                    pass 
+            self._added_patterns.append(pattern)
             return self._cells
         else:    
 
             return_cells = copy.deepcopy(self._cells)
-            for cell, value in grid.items():
+            for cell, value in pattern.items():
                 r,c = cell
-                return_cells[r+0, c+0] += value  
+                
+                try:
+                    return_cells[(r, c)] += value  
+                except KeyError as e:
+                    # outside boundaries, but we don't care. We just don't add it. As this is already further reachign than the border around the board, there are most probably already some illegal squares there. 
+                    if not neglect_outside_board_errors:
+                        print(e)
+                        raise                    
+                    pass 
+
             return return_cells
           
     def __str__(self):

@@ -136,6 +136,19 @@ class TriangularPatternOperations():
                 filtered.append(p)
         return filtered
 
+    
+
+    def cell_up_else_down_facing_triangle(self, cell):
+        # /\  or \/ 
+        # by convention: (0,0) is an up facing triangle. 
+        # --> all r + c = even  cells are up facing.
+
+        r, c = cell
+        return (r+c) % 2 == 0
+
+    def get_most_top_left_cell_coordinate(self, pattern):
+        return sorted(list(pattern))[0]
+
     def crop_pattern_to_bounding_box(self, pattern):
         # play it save, use "normalize"
         # assume all coordinates are positive. (if not, use normalize)
@@ -303,6 +316,17 @@ class TriangularPatternOperations():
 
         return mirrored
 
+    def translate_manual(self, pattern, diff):
+        
+        dr, dc = diff
+        assert (dr + dc)%2 == 0, "Sum or row and col should be even in translation. Otherwise, shape will change."
+        
+        translated = {}
+        for cell in pattern.keys():
+            r,c = cell
+            translated[(r + dr, c + dc)] = pattern[cell]
+        return translated
+
     def translate(self, pattern, direction, steps=1):
 
 
@@ -312,18 +336,14 @@ class TriangularPatternOperations():
 
         steps = int(steps)  # must be integer.
 
-        translated = {}
-        
         x, y = TRANSLATE_DIRECTIONS[direction]
         
         # number of steps.
         x*= steps
         y*= steps
 
-        for cell in pattern.keys():
-            r,c = cell
-            translated[r + y, c + x] = pattern[cell]
-        
+        translated = self.translate_manual(pattern, (y,x))
+
         return translated
 
     
