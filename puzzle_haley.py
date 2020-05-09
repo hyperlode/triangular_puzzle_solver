@@ -477,14 +477,27 @@ def logger_setup():
     # logging.basicConfig(format='%(asctime)s - %(levelname)s - %(module)s/%(funcName)s/%(lineno)d: \n \t %(message)s', level=logging.INFO)
     
 
-    # message_format = logging.Formatter('%(levelname)s\t%(asctime)s\t:\t%(message)s\t(%(module)s/%(funcName)s/%(lineno)d)')
+    message_format = logging.Formatter('%(levelname)s\t%(asctime)s\t:\t%(message)s\t(%(module)s/%(funcName)s/%(lineno)d)')
+
     # logging.basicConfig(format= message_format, level=logging.INFO)
     
 
     # logging.basicConfig(level=logging.DEBUG, format='%(relativeCreated)6d %(threadName)s %(message)s')
+
+
+    # works, but logs everything....
+    # logging.basicConfig(level=logging.INFO, format='%(asctime)s %(threadName)s %(message)s')
+    # logger = logging.getLogger(__name__)
+
     logging.basicConfig(level=logging.INFO, format='%(asctime)s %(threadName)s %(message)s')
+    # test_lode 
+    logger = logging.getLogger("puzzle_haley")
+    # logger.addHandler(test_lode)
     
-    logger = logging.getLogger(__name__)
+    logger.setLevel(logging.INFO)
+
+
+
 
     return logger
 
@@ -494,6 +507,9 @@ if __name__ == "__main__":
     logger = logger_setup()
     solver = triangular_puzzle_solver.PuzzleSolver(logger)
     logger.info("start Haley puzzle solving.")
+
+
+ 
     
     # only do if not hardcoded.
     if GENERATE_PIECES:
@@ -502,6 +518,12 @@ if __name__ == "__main__":
     starting_puzzle_boards = prepare_base_boards_with_hexagon( pieces_with_orientations[0][0], base_board)
 
     board = starting_puzzle_boards[0]
+
+
+
+
+
+
     state = [(0,0)]
     last_tried = None
 
@@ -519,6 +541,8 @@ if __name__ == "__main__":
         [2,1,3,4,5,6,7,8,9,10,11],
     ]
 
+    
+
     for sequence_of_pieces_indeces_to_try in permutations:
         
         logger.info("Start trying pieces sequence. (all orientations, top left to bottom right): {}".format(sequence_of_pieces_indeces_to_try))
@@ -529,11 +553,21 @@ if __name__ == "__main__":
             try_board = solver.build_up_state(try_board, pieces_with_orientations, state)
         success, state = solver.try_sequence_recursive(try_board, sequence_of_pieces_indeces_to_try, pieces_with_orientations, state)
 
-        logger.info("Testing endend. Found? {}, state: {}".format(success, state))
-        
-        # print(success)
-        # print(state)
+        pieces_tested = solver.tested_pieces
+        longest_state = solver.state_saver
 
+       
+
+        logger.info("Testing endend. Pieces tested:{}. Found? {}, state: {}. longest state length: {}/{} ({})".format(pieces_tested, success, state, len(longest_state), len(sequence_of_pieces_indeces_to_try), longest_state))
+       
+
+        # longest_state = [(2, 3), (1, 1), (3, 2), (4, 3), (5, 1), (6, 3), (7, 10), (8, 0)]
+        show_longest_build_up = True
+        if show_longest_build_up:
+            solver.build_up_state(board, pieces_with_orientations, longest_state, True)
+
+        solver.state_saver = []
+        solver.tested_pieces = 0 
 
 
 

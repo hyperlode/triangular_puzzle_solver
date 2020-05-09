@@ -27,11 +27,15 @@ class PuzzleSolver():
         self.logger.info("Puzzle solver init.")
 
         self.transformer = triangular_pattern.TriangularPatternOperations()
+
+        # stats:
+        self.state_saver = []
+        self.tested_pieces = 0
       
     def solve(self):
         pass
 
-    def build_up_state(self, board, pieces_with_orientations, state):
+    def build_up_state(self, board, pieces_with_orientations, state, show_every_step=False):
         for piece in state:
             piece, orientation = piece
             piece_pattern = pieces_with_orientations[piece][orientation]
@@ -39,38 +43,49 @@ class PuzzleSolver():
             success = self.try_piece_on_board(board, piece_pattern)
 
             if not success:
-               print(board)
+               self.logger.error(board)
                raise
-
+               
+            if show_every_step:
+                self.logger.info("\n {}".format(str(board)))
+                
         return board
         
     def try_sequence_recursive(self, board, try_sequence_of_pieces_index, pieces_with_orientations, state, last_tried=None):
         # pieces_with_orientations_contains the right sequence in which piece are tried. We will not swap pieces.
         # state  = sequence [(firstpieceindex,orientationindex),(secondpieceindex,orientationindex),...]
+        if len(state) > len(self.state_saver):
+            self.logger.debug("Longest state: {}".format(state))
+            self.logger.debug(str(board))
+            self.state_saver = state
 
-        print(state)
+
+        #print(state)
         # stop condition
         if len(state) == 11:
             self.logger.info("We have a winner!")
             self.logger.info(state)
             raise
-
+        
         # assume board populated according to state.
         if last_tried is None:
             # take next piece with first iteration
             try_piece_index = try_sequence_of_pieces_index[len(state)]  
             orientation_index = 0
-            all_tested = False
-
+           
         else:
             # only use to restart for a certain state.
             try_piece_index, orientation_index_offset= last_tried          
             orientation_index += orientation_index_offset
-            all_tested = orientation_index >= total_orientations
- 
+           
+        # relevant orientations for this piece.
         all_orientations_patterns = pieces_with_orientations[try_piece_index]
         total_orientations = len(all_orientations_patterns)
 
+        # test stop condition
+        all_tested = orientation_index >= total_orientations
+
+        # go over all orientations
         while not all_tested:
             test_board = copy.deepcopy(board)
             
@@ -95,7 +110,7 @@ class PuzzleSolver():
                     # looking good     
                     return True, return_state
                 else:
-                    print("returned from recursion. current: ")
+                    self.logger.debug("returned from recursion. current: ")
                 
             # print("stats:")
             # print(state)
@@ -107,9 +122,6 @@ class PuzzleSolver():
             if orientation_index >= total_orientations:
                 all_tested = True
           
-            # input("pause to continue. alltested?:{}".format(all_tested))
-
-        # print("byee")
         return False, state
 
     # def next_step(self, board, pieces_with_orientations, state, last_tried=None):
@@ -182,6 +194,7 @@ class PuzzleSolver():
         # assume piece to be normalized. (i.e. top left coordinate as close to (0,0) as possible)
 
         # get next free cell on board.
+        self.tested_pieces += 1
         free_cell = board.get_most_top_left_free_cell()
         
         # print("free_cell:{}".format(free_cell))
