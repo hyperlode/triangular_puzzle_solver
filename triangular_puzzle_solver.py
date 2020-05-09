@@ -1,6 +1,10 @@
+import logging
+import copy
+
 import triangular_grid
 import triangular_pattern
-import copy
+
+
 
 class PuzzleSolver():
     # the puzzle contais twelve pieces that need to fit in certain pattern. 
@@ -17,52 +21,96 @@ class PuzzleSolver():
     # Save states for multiprocessing or interruptions. 
     # state = unique descriptive string with the sequence of all 11 (not 12) pieces on one of the five (prepopulated with the hexagon) boards
         
-    def __init__(self):
+    def __init__(self, logger=None):
         
+        self.logger = logger or logging.getLogger(__name__)
+        self.logger.info("Puzzle solver init.")
 
-        # craete five base boards.
-        # hexagon postions: 
         self.transformer = triangular_pattern.TriangularPatternOperations()
-        pass
-
+      
     def solve(self):
         pass
 
+    def build_up_state(self, board, pieces_with_orientations, state):
+        for piece in state:
+            piece, orientation = piece
+            piece_pattern = pieces_with_orientations[piece][orientation]
+
+            success = self.try_piece_on_board(board, piece_pattern)
+
+            if not success:
+               print(board)
+               raise
+
+        return board
         
     def try_sequence_recursive(self, board, try_sequence_of_pieces_index, pieces_with_orientations, state, last_tried=None):
         # pieces_with_orientations_contains the right sequence in which piece are tried. We will not swap pieces.
         # state  = sequence [(firstpieceindex,orientationindex),(secondpieceindex,orientationindex),...]
 
+        print(state)
         # stop condition
         if len(state) == 11:
-            print("We have a winner!")
-            print(state)
+            self.logger.info("We have a winner!")
+            self.logger.info(state)
             raise
 
         # assume board populated according to state.
         if last_tried is None:
-
             # take next piece with first iteration
-                
             try_piece_index = try_sequence_of_pieces_index[len(state)]  
-            orientation_index_offset = 0
+            orientation_index = 0
+            all_tested = False
+
         else:
             # only use to restart for a certain state.
             try_piece_index, orientation_index_offset= last_tried          
-
-        # try orientations.
-        try_pieces = pieces_with_orientations[try_piece_index][orientation_index_offset:]
-
-        success, orientation_index, result_board = self.try_pieces_on_board(board, try_pieces  )
-        print(str(board))
-
-        if success:
             orientation_index += orientation_index_offset
-            state.append((try_piece_index, orientation_index))
-            self.try_sequence_recursive(result_board, try_sequence_of_pieces_index, pieces_with_orientations, state, last_tried=None)
-            return True, state
-        else:
-            return False, state
+            all_tested = orientation_index >= total_orientations
+ 
+        all_orientations_patterns = pieces_with_orientations[try_piece_index]
+        total_orientations = len(all_orientations_patterns)
+
+        while not all_tested:
+            test_board = copy.deepcopy(board)
+            
+            # print("will search. at index: {}, index_offset = {}, orientations to try: {}  ({})".format( 
+            #     try_piece_index, 
+            #     orientation_index_offset, 
+            #     len(try_pieces) ,
+            #     try_pieces)
+            #     ) 
+            
+            piece_fits, orientation_index, result_board = self.try_pieces_on_board(test_board, all_orientations_patterns, orientation_index)
+            # print(result_board)
+          
+            # print("piece_fits? {} , {}".format(piece_fits, orientation_index_of_tried_pieces))
+
+            if piece_fits:
+                new_state = state[::]
+                new_state.append((try_piece_index, orientation_index))
+                success, return_state = self.try_sequence_recursive(result_board, try_sequence_of_pieces_index, pieces_with_orientations, new_state , last_tried=None)
+
+                if success:   
+                    # looking good     
+                    return True, return_state
+                else:
+                    print("returned from recursion. current: ")
+                
+            # print("stats:")
+            # print(state)
+            # print(total_orientations)
+            # print(orientation_index_offset)
+
+            orientation_index += 1 # next piece
+
+            if orientation_index >= total_orientations:
+                all_tested = True
+          
+            # input("pause to continue. alltested?:{}".format(all_tested))
+
+        # print("byee")
+        return False, state
 
     # def next_step(self, board, pieces_with_orientations, state, last_tried=None):
     #     # pieces_with_orientations_contains the right sequence in which piece are tried. We will not swap pieces.
@@ -105,25 +153,26 @@ class PuzzleSolver():
     #         return False, state
 
 
-    def try_pieces_on_board(self, board, pieces):
+    def try_pieces_on_board(self, board, pieces, start_piece_index=0):
         # check if any of the pieces fits on top left of board. if so, return new board and piece index.
         # else, return False
-        index = 0
+        index = start_piece_index
 
         while index < len(pieces):
             try_piece = pieces[index]
             test_board = copy.deepcopy(board)
             
+            self.logger.debug("try piece index:{}".format(index))
             success = self.try_piece_on_board(test_board, try_piece)
             
-
             if success:
-                # board = test_board
+                
+                # print(test_board)
                 return True, index, test_board
             
             index+=1
 
-        return False, None, None
+        return False, index, None
 
     def try_piece_on_board(self, board, piece):
         
@@ -137,8 +186,8 @@ class PuzzleSolver():
         
         # print("free_cell:{}".format(free_cell))
         if free_cell is None:
-            print("solution found!")
-            print(board.get_added_patterns())
+            self.logger.info("solution found!")
+            self.logger.info(board.get_added_patterns())
             raise GridFullException
         
         # 2 check if \/(down) or /\ (up)  triangle
@@ -155,6 +204,8 @@ class PuzzleSolver():
 
         # must be equal to have a chance to match.
         if free_cell_is_up_triangle != piece_top_left_is_up_triangle:
+            self.logger.debug("non matching starting points. Will for sure not work.: free cell triange: {}  , piece top left triangle: {}".format(free_cell_is_up_triangle, piece_top_left_is_up_triangle))
+            self.logger.debug(piece)
             return False
 
         # if ok, translate pattern to position
@@ -172,6 +223,8 @@ class PuzzleSolver():
 
         # overlay pattern
         board.add_pattern(translated_piece)
+
+        self.logger.debug(board)
 
         # check if legal. 
         legal = board.is_board_legal()

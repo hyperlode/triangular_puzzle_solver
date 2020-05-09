@@ -1,9 +1,13 @@
+import copy
+import logging
+import time
+import datetime
 
 import triangular_puzzle_solver
 
 import triangular_grid
 import triangular_pattern
-import copy
+
 
 
 # pieces, made up of small triangles.
@@ -466,13 +470,30 @@ def prepare_base_boards_with_hexagon(hexagon, base_board):
     return starting_puzzle_boards
 
 
+def logger_setup():
+    # logger setup 
+    #logging.basicConfig(format='%(asctime)s - %(module)s (ln:%(lineno)d): %(message)s', level=logging.INFO)
+    # logging.basicConfig(format='%(asctime)s : %(message)s \t\t (%(module)s:%(lineno)d)', level=logging.INFO)
+    # logging.basicConfig(format='%(asctime)s - %(levelname)s - %(module)s/%(funcName)s/%(lineno)d: \n \t %(message)s', level=logging.INFO)
+    
+
+    # message_format = logging.Formatter('%(levelname)s\t%(asctime)s\t:\t%(message)s\t(%(module)s/%(funcName)s/%(lineno)d)')
+    # logging.basicConfig(format= message_format, level=logging.INFO)
+    
+
+    # logging.basicConfig(level=logging.DEBUG, format='%(relativeCreated)6d %(threadName)s %(message)s')
+    logging.basicConfig(level=logging.INFO, format='%(asctime)s %(threadName)s %(message)s')
+    
+    logger = logging.getLogger(__name__)
+
+    return logger
+
 
 if __name__ == "__main__":
 
-
-    solver = triangular_puzzle_solver.PuzzleSolver()
-    
-    
+    logger = logger_setup()
+    solver = triangular_puzzle_solver.PuzzleSolver(logger)
+    logger.info("start Haley puzzle solving.")
     
     # only do if not hardcoded.
     if GENERATE_PIECES:
@@ -488,12 +509,30 @@ if __name__ == "__main__":
     #pieces_with_orientations = FAKE_TEST_PIECES_WITH_ORIENTATIONS
     
     # success, state = solver.next_step(board, pieces_with_orientations, state, (1,0))
-    sequence_of_pieces_indeces_to_try = [2,1,3,4,5,6,7,8,9,10,11]  # 0 is already placed on the board
-    state = []
-    success, state = solver.try_sequence_recursive(board, sequence_of_pieces_indeces_to_try, pieces_with_orientations, state)
-    
-    print(success)
-    print(state)
+
+    # NOT WORKING. sequence_of_pieces_indeces_to_try = [1,2,3,4,5,6,7,8,9,10,11]  # 0 is already placed on the board
+
+
+    # 0 is already placed on the board!
+    permutations = [
+        [1,2,3,4,5,6,7,8,9,10,11],
+        [2,1,3,4,5,6,7,8,9,10,11],
+    ]
+
+    for sequence_of_pieces_indeces_to_try in permutations:
+        
+        logger.info("Start trying pieces sequence. (all orientations, top left to bottom right): {}".format(sequence_of_pieces_indeces_to_try))
+        state = []
+        try_board = copy.deepcopy(board)
+        
+        if len(state) > 0:
+            try_board = solver.build_up_state(try_board, pieces_with_orientations, state)
+        success, state = solver.try_sequence_recursive(try_board, sequence_of_pieces_indeces_to_try, pieces_with_orientations, state)
+
+        logger.info("Testing endend. Found? {}, state: {}".format(success, state))
+        
+        # print(success)
+        # print(state)
 
 
 
