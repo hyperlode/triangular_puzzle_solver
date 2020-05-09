@@ -27,34 +27,82 @@ class PuzzleSolver():
 
     def solve(self):
         pass
+
         
-    def next_step(self, board, pieces_with_orientations, state, last_tried, unused_pieces):
+    def try_sequence_recursive(self, board, try_sequence_of_pieces_index, pieces_with_orientations, state, last_tried=None):
+        # pieces_with_orientations_contains the right sequence in which piece are tried. We will not swap pieces.
         # state  = sequence [(firstpieceindex,orientationindex),(secondpieceindex,orientationindex),...]
+
+        # stop condition
+        if len(state) == 11:
+            print("We have a winner!")
+            print(state)
+            raise
 
         # assume board populated according to state.
         if last_tried is None:
 
             # take next piece with first iteration
-                # search next piece
-            try_piece_index = unused_pieces.pop(0)
-            print(unused_pieces)
-            
+                
+            try_piece_index = try_sequence_of_pieces_index[len(state)]  
             orientation_index_offset = 0
         else:
-            try_piece_index, orientation_index_offset= last_tried
-            
+            # only use to restart for a certain state.
+            try_piece_index, orientation_index_offset= last_tried          
 
         # try orientations.
         try_pieces = pieces_with_orientations[try_piece_index][orientation_index_offset:]
 
-        success, orientation_index = self.try_pieces_on_board(board, try_pieces  )
+        success, orientation_index, result_board = self.try_pieces_on_board(board, try_pieces  )
+        print(str(board))
 
         if success:
             orientation_index += orientation_index_offset
             state.append((try_piece_index, orientation_index))
+            self.try_sequence_recursive(result_board, try_sequence_of_pieces_index, pieces_with_orientations, state, last_tried=None)
             return True, state
         else:
             return False, state
+
+    # def next_step(self, board, pieces_with_orientations, state, last_tried=None):
+    #     # pieces_with_orientations_contains the right sequence in which piece are tried. We will not swap pieces.
+    #     # state  = sequence [(firstpieceindex,orientationindex),(secondpieceindex,orientationindex),...]
+
+
+    #     used_pieces = [piece_index for piece_index, orientation in state]
+    #     unused_pieces = [i for i in range(12) if i not in used_pieces] # retain order!
+
+    #     # stop condition
+    #     if len(unused_pieces) == 0:
+    #         print("We have a winner!")
+    #         print(state)
+    #         raise
+
+
+    #     # assume board populated according to state.
+    #     if last_tried is None:
+
+    #         # take next piece with first iteration
+    #             # search next piece
+    #         try_piece_index = unused_pieces.pop(0)
+    #         print(unused_pieces)
+            
+    #         orientation_index_offset = 0
+    #     else:
+    #         # only use to restart for a certain state.
+    #         try_piece_index, orientation_index_offset= last_tried          
+
+    #     # try orientations.
+    #     try_pieces = pieces_with_orientations[try_piece_index][orientation_index_offset:]
+
+    #     success, orientation_index = self.try_pieces_on_board(board, try_pieces  )
+
+    #     if success:
+    #         orientation_index += orientation_index_offset
+    #         state.append((try_piece_index, orientation_index))
+    #         return True, state
+    #     else:
+    #         return False, state
 
 
     def try_pieces_on_board(self, board, pieces):
@@ -67,14 +115,15 @@ class PuzzleSolver():
             test_board = copy.deepcopy(board)
             
             success = self.try_piece_on_board(test_board, try_piece)
-            print(str(test_board))
+            
 
             if success:
-                return True, index
+                # board = test_board
+                return True, index, test_board
             
             index+=1
 
-        return False, None
+        return False, None, None
 
     def try_piece_on_board(self, board, piece):
         

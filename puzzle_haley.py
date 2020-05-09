@@ -484,17 +484,14 @@ if __name__ == "__main__":
     state = [(0,0)]
     last_tried = None
 
-    
-    used_pieces = [piece_index for piece_index, orientation in state]
-    unused_pieces = [i for i in range(12) if i not in used_pieces] # retain order!
-    
-
-
     # triangular_puzzle_solver.show_pattern_on_grid()
-    pieces_with_orientations = FAKE_TEST_PIECES_WITH_ORIENTATIONS
-    print(unused_pieces)
-    success, state = solver.next_step(board, pieces_with_orientations, state, last_tried, unused_pieces)
-
+    #pieces_with_orientations = FAKE_TEST_PIECES_WITH_ORIENTATIONS
+    
+    # success, state = solver.next_step(board, pieces_with_orientations, state, (1,0))
+    sequence_of_pieces_indeces_to_try = [2,1,3,4,5,6,7,8,9,10,11]  # 0 is already placed on the board
+    state = []
+    success, state = solver.try_sequence_recursive(board, sequence_of_pieces_indeces_to_try, pieces_with_orientations, state)
+    
     print(success)
     print(state)
 
