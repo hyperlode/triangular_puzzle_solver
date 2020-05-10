@@ -2,7 +2,7 @@ import copy
 import logging
 import time
 import datetime
-
+from collections import defaultdict
 import triangular_puzzle_solver
 
 import triangular_grid
@@ -502,27 +502,7 @@ def logger_setup():
     return logger
 
 
-if __name__ == "__main__":
-
-    logger = logger_setup()
-    solver = triangular_puzzle_solver.PuzzleSolver(logger)
-    logger.info("start Haley puzzle solving.")
-
-
- 
-    
-    # only do if not hardcoded.
-    if GENERATE_PIECES:
-        pieces_with_orientations, pieces_orientations_per_piece = prepare_puzzle_pieces(base_pieces_patterns)
-    
-    starting_puzzle_boards = prepare_base_boards_with_hexagon( pieces_with_orientations[0][0], base_board)
-
-    board = starting_puzzle_boards[0]
-
-
-
-
-
+def solve_by_random(board, ):
 
     state = [(0,0)]
     last_tried = None
@@ -533,41 +513,72 @@ if __name__ == "__main__":
     # success, state = solver.next_step(board, pieces_with_orientations, state, (1,0))
 
     # NOT WORKING. sequence_of_pieces_indeces_to_try = [1,2,3,4,5,6,7,8,9,10,11]  # 0 is already placed on the board
-
-
-    # 0 is already placed on the board!
-    permutations = [
-        [1,2,3,4,5,6,7,8,9,10,11],
-        [2,1,3,4,5,6,7,8,9,10,11],
-    ]
-
     
+    pieces_to_try_indeces = [1,2,3,4,5,6,7,8,9,10,11]  # 0 is already placed on the board!\
+    tested_sequences = 0
+    # stats = {}
+    while True:
+        tested_sequences += 1
+        pieces_tested, longest_state = solver.analyse_randomize_sequence_of_pieces(board, pieces_with_orientations, pieces_to_try_indeces)
 
-    for sequence_of_pieces_indeces_to_try in permutations:
-        
-        logger.info("Start trying pieces sequence. (all orientations, top left to bottom right): {}".format(sequence_of_pieces_indeces_to_try))
-        state = []
-        try_board = copy.deepcopy(board)
-        
-        if len(state) > 0:
-            try_board = solver.build_up_state(try_board, pieces_with_orientations, state)
-        success, state = solver.try_sequence_recursive(try_board, sequence_of_pieces_indeces_to_try, pieces_with_orientations, state)
+        if len(longest_state) >= 11:
+            logger.critical("winning sequence: {}".format(longest_state))
+            raise
 
-        pieces_tested = solver.tested_pieces
-        longest_state = solver.state_saver
+        # show_board = copy.deepcopy(board)
+        # solver.build_up_state(show_board, pieces_with_orientations, longest_state,True)
+        logger.info('Tested sequences: {}'.format(tested_sequences))
 
-       
+def show_a_solution():
+    '''
+    2020-05-09 19:00:00,296 MainThread Start trying pieces sequence. (all orientations, top left to bottom right): [2, 5, 9, 3, 11, 10, 6, 1, 4, 7, 8]
+    2020-05-09 19:00:00,369 MainThread Testing endend. Pieces tested:42. Found? False, state: []. longest state length: 2/11 ([(2, 3), (5, 1)])
+    2020-05-09 19:00:00,369 MainThread Tested sequences: 58391
+    2020-05-09 19:00:00,371 MainThread Start trying pieces sequence. (all orientations, top left to bottom right): [2, 3, 11, 6, 1, 4, 7, 5, 10, 9, 8]
+    2020-05-09 19:00:00,561 MainThread We have a winner!
+    2020-05-09 19:00:00,561 MainThread [(2, 3), (3, 5), (11, 3), (6, 0), (1, 1), (4, 4), (7, 0), (5, 0), (10, 2), (9, 5), (8, 10)]
+    Traceback (most recent call last):
+    File "puzzle_haley.py", line 542, in <module>
+        pieces_tested, longest_state = solver.analyse_randomize_sequence_of_pieces(board, pieces_with_orientations, pieces_to_try_indeces)
+    File "C:\Data\GIT\triangular_puzzle_haley\triangular_puzzle_solver.py", line 74, in analyse_randomize_sequence_of_pieces
+        pieces_tested, longest_state = self.analyse_sequence_of_pieces(board, pieces_with_orientations, pieces_indeces, show_longest_state=False)
+    File "C:\Data\GIT\triangular_puzzle_haley\triangular_puzzle_solver.py", line 85, in analyse_sequence_of_pieces
+        success, state = self.try_sequence_recursive(try_board, sequence_of_pieces_indeces_to_try, pieces_with_orientations, state)
+    File "C:\Data\GIT\triangular_puzzle_haley\triangular_puzzle_solver.py", line 154, in try_sequence_recursive
+        success, return_state = self.try_sequence_recursive(result_board, try_sequence_of_pieces_index, pieces_with_orientations, new_state , last_tried=None)
+    File "C:\Data\GIT\triangular_puzzle_haley\triangular_puzzle_solver.py", line 154, in try_sequence_recursive
+        success, return_state = self.try_sequence_recursive(result_board, try_sequence_of_pieces_index, pieces_with_orientations, new_state , last_tried=None)
+    File "C:\Data\GIT\triangular_puzzle_haley\triangular_puzzle_solver.py", line 154, in try_sequence_recursive
+        success, return_state = self.try_sequence_recursive(result_board, try_sequence_of_pieces_index, pieces_with_orientations, new_state , last_tried=None)
+    [Previous line repeated 8 more times]
+    File "C:\Data\GIT\triangular_puzzle_haley\triangular_puzzle_solver.py", line 115, in try_sequence_recursive
+        raise
+    RuntimeError: No active exception to reraise
 
-        logger.info("Testing endend. Pieces tested:{}. Found? {}, state: {}. longest state length: {}/{} ({})".format(pieces_tested, success, state, len(longest_state), len(sequence_of_pieces_indeces_to_try), longest_state))
-       
+    C:\Data\GIT\triangular_puzzle_haley>
+    '''
 
-        # longest_state = [(2, 3), (1, 1), (3, 2), (4, 3), (5, 1), (6, 3), (7, 10), (8, 0)]
-        show_longest_build_up = True
-        if show_longest_build_up:
-            solver.build_up_state(board, pieces_with_orientations, longest_state, True)
+    starting_puzzle_boards = prepare_base_boards_with_hexagon( pieces_with_orientations[0][0], base_board)
+    board = starting_puzzle_boards[0]
+    
+    show_board = copy.deepcopy(board)
+    winning_state = [(2, 3), (3, 5), (11, 3), (6, 0), (1, 1), (4, 4), (7, 0), (5, 0), (10, 2), (9, 5), (8, 10)]
+    solver.build_up_state(show_board, pieces_with_orientations, winning_state,True)
 
-        solver.state_saver = []
-        solver.tested_pieces = 0 
+if __name__ == "__main__":
 
+    logger = logger_setup()
+    solver = triangular_puzzle_solver.PuzzleSolver(logger)
+    logger.info("start Haley puzzle solving.")
+    
+    # only do if not hardcoded.
+    if GENERATE_PIECES:
+        pieces_with_orientations, pieces_orientations_per_piece = prepare_puzzle_pieces(base_pieces_patterns)
+    
+    starting_puzzle_boards = prepare_base_boards_with_hexagon( pieces_with_orientations[0][0], base_board)
+    board = starting_puzzle_boards[0]
 
+    # solve_by_random(board)
 
+    # solution found 2020-05-09 after about 65000 random iterations. 
+    show_a_solution()

@@ -1,5 +1,6 @@
 import logging
 import copy
+import random
 
 import triangular_grid
 import triangular_pattern
@@ -50,6 +51,52 @@ class PuzzleSolver():
                 self.logger.info("\n {}".format(str(board)))
                 
         return board
+
+    def analyse_multiple_sequences_of_pieces(self, board, pieces_with_orientations, sequences_of_pieces_indeces, show_longest_state=False):
+
+        combined_longest_state = []
+        total_pieces_tested = 0
+        for sequence_of_pieces_indeces_to_try in sequences_of_pieces_indeces:
+            pieces_tested, longest_successful_state = self.analyse_sequence_of_pieces(board, pieces_with_orientations, sequence_of_pieces_indeces_to_try)
+
+            total_pieces_tested += pieces_tested
+
+            if len(longest_successful_state) > len(combined_longest_state):
+                combined_longest_state = longest_successful_state
+
+        if show_longest_state:
+            self.build_up_state(board, pieces_with_orientations, combined_longest_state, True)
+
+        return total_pieces_tested, combined_longest_state
+
+    def analyse_randomize_sequence_of_pieces(self, board, pieces_with_orientations, pieces_indeces):
+       random.shuffle(pieces_indeces)
+       pieces_tested, longest_state = self.analyse_sequence_of_pieces(board, pieces_with_orientations, pieces_indeces, show_longest_state=False)
+       return pieces_tested, longest_state
+
+    def analyse_sequence_of_pieces(self, board, pieces_with_orientations, sequence_of_pieces_indeces_to_try, show_longest_state=False):
+
+        self.logger.info("Start trying pieces sequence. (all orientations, top left to bottom right): {}".format(sequence_of_pieces_indeces_to_try))
+        state = []
+        try_board = copy.deepcopy(board)
+        
+        if len(state) > 0:
+            try_board = self.build_up_state(try_board, pieces_with_orientations, state)
+        success, state = self.try_sequence_recursive(try_board, sequence_of_pieces_indeces_to_try, pieces_with_orientations, state)
+
+        pieces_tested = self.tested_pieces
+        longest_state = self.state_saver[::]
+        
+        self.state_saver = []
+        self.tested_pieces = 0 
+        
+        self.logger.info("Testing endend. Pieces tested:{}. Found? {}, state: {}. longest state length: {}/{} ({})".format(pieces_tested, success, state, len(longest_state), len(sequence_of_pieces_indeces_to_try), longest_state))
+
+        if show_longest_state:
+            self.build_up_state(board, pieces_with_orientations, longest_state, True)
+
+
+        return pieces_tested, longest_state
         
     def try_sequence_recursive(self, board, try_sequence_of_pieces_index, pieces_with_orientations, state, last_tried=None):
         # pieces_with_orientations_contains the right sequence in which piece are tried. We will not swap pieces.
