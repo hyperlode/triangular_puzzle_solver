@@ -442,19 +442,19 @@ def show_orientations_of_all_patterns(patterns,  delete_equal_patterns=False, sh
 
 def show_patterns_on_grid(patterns, patterns_per_col, spacing=0):
     transformer = triangular_pattern.TriangularPatternOperations()
-    print(patterns)
-    arranged_patterns = transformer.arrange_patterns_for_no_overlap(patterns, patterns_per_col)
+    # print(patterns)
+    arranged_patterns = transformer.arrange_patterns_for_no_overlap(patterns, patterns_per_col, spacing)
     
-    print(arranged_patterns)
+    # print(arranged_patterns)
     # create fitting field.
     bounding_box = transformer.get_combined_bounding_box(arranged_patterns)
 
-    print(bounding_box)
+    # print(bounding_box)
     rows = bounding_box["max_r"] + 1  # rows one more than index.
     cols = bounding_box["max_c"] + 1
     
-    print(rows)
-    print(cols)
+    # print(rows)
+    # print(cols)
     base = triangular_grid.TriangularGrid(rows, cols)   
     
     for pattern in arranged_patterns:

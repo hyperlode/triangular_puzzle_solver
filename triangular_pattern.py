@@ -225,8 +225,7 @@ class TriangularPatternOperations():
             col_count += 1
 
             bb = self.get_bounding_box(pattern)
-            print("bbbbb{}".format(bb))
-
+           
             # check horizontal spacing
             while right_col + spacing > bb["min_c"]:
                 pattern = self.translate(pattern, "E")
