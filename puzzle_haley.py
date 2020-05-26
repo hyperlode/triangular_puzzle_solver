@@ -427,16 +427,27 @@ def show_a_solution():
 
     C:\Data\GIT\triangular_puzzle_haley>
     '''
-
+    logger = logger_setup()
+    solver = triangular_puzzle_solver.PuzzleSolver(logger)
+   
     starting_puzzle_boards = prepare_base_boards_with_hexagon( pieces_with_orientations[0][0], base_board)
     board = starting_puzzle_boards[0]
     
     show_board = copy.deepcopy(board)
-    winning_state = [(2, 3), (3, 5), (11, 3), (6, 0), (1, 1), (4, 4), (7, 0), (5, 0), (10, 2), (9, 5), (8, 10)]
-    solver.build_up_state(show_board, pieces_with_orientations, winning_state,True)
+    winning_states = [
+            [(2, 3), (3, 5), (11, 3), (6, 0), (1, 1), (4, 4), (7, 0), (5, 0), (10, 2), (9, 5), (8, 10)],  # 2020-05-09 after 67000 random sequences tries
+            [(8,6), (3,5 ), (6,0 ), (10,11 ), (4,5 ), (2,4 ), (7,9 ), (11,3 ), (1,0 ), (9,3 ), (5,0 )],  # 2020-05-25 245000 attempts  
+            [(2,3), (10,0 ), (11,3 ), (6,0 ), (8,5 ), (9,1 ), (5,0 ), (1,2 ), (7,2 ), (4,2 ), (3,3 )],  # 2020-05-25  322000 attempts 
+            [(7, 6), (2, 0), (3, 5), (11, 1), (8, 4), (1, 0), (10, 7), (6, 3), (4, 0), (9, 3), (5, 0)],  # 2020-05-26 535000 attempts
+            # [(,), (, ), (, ), (, ), (, ), (, ), (, ), (, ), (, ), (, ), (, )],
+        ]
+
+
+    solver.build_up_state(show_board, pieces_with_orientations, winning_states[2],True)
 
 if __name__ == "__main__":
-
+    show_a_solution()
+    exit()
 
     logger = logger_setup()
     solver = triangular_puzzle_solver.PuzzleSolver(logger)
@@ -449,7 +460,4 @@ if __name__ == "__main__":
     starting_puzzle_boards = prepare_base_boards_with_hexagon( pieces_with_orientations[0][0], base_board)
     board = starting_puzzle_boards[0]
 
-    # solve_by_random(board)
-
-    # solution found 2020-05-09 after about 65000 random iterations. 
-    show_a_solution()
+    solve_by_random(board)

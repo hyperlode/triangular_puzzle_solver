@@ -72,8 +72,38 @@ def execute_sql(conn, sql):
     cur.execute(sql)
     return cur
 
-if __name__ == '__main__':
-    conn = create_connection(r"C:\temp\haley_puzzle\pythonsqlite.db")
+
+
+def setup_haley_puzzle_attempts_no_boards():
+    conn = create_connection(r"D:\Temp\puzzle_haley\attempts_no_boards.db")
+
+   
+    # all used pieces indeces
+    used_pieces = [1,2,3,4,5,6,7,8,9,10,11]
+
+    # create tables
+    if conn is None:
+        print("Error! cannot create the database connection.")
+        raise Error
+    create_table(conn, create_attempts_table)
+
+    attemps_iterator = haley_puzzle_attempts.PermutationAsString(used_pieces)
+    
+    for i, sequence in enumerate(attemps_iterator):
+        try:
+            add_attempt(conn, sequence, i)
+        except sqlite3.IntegrityError:
+           
+            pass
+            
+    commit(conn)
+
+    # records = get_all_records(conn, "attempts")
+    
+def setup_haley_puzzle_attempts():
+     # conn = create_connection(r"C:\temp\haley_puzzle\pythonsqlite.db")
+    conn = create_connection(r"D:\Temp\puzzle_haley\attempts.db")
+
    
     # all used pieces indeces
     used_pieces = [1,2,3,4,5,6,7,8,9,10,11]
@@ -102,9 +132,15 @@ if __name__ == '__main__':
     
     
 
-    for i in range(110):
+    # for i in range(110):
+    #     try:
+    #         add_attempt(conn, next(attemps_iterator), i)
+    #     except sqlite3.IntegrityError:
+           
+    #         pass
+    for i, sequence in enumerate(attemps_iterator):
         try:
-            add_attempt(conn, next(attemps_iterator), i)
+            add_attempt(conn, sequence, i)
         except sqlite3.IntegrityError:
            
             pass
@@ -112,6 +148,16 @@ if __name__ == '__main__':
     commit(conn)
 
     records = get_all_records(conn, "attempts")
-    for r in records[:110]:
-        print(r)
+    # for r in records[:110]:
+    #     print(r)
         
+if __name__ == '__main__':
+   # conn = create_connection(r"C:\temp\haley_puzzle\pythonsqlite.db")
+    # conn = create_connection(r"D:\Temp\puzzle_haley\attempts.db")
+
+    setup_haley_puzzle_attempts_no_boards()
+
+    # result = execute_sql(conn, "select count(*) from attempts")
+
+    # num_of_rows = result[0][0]
+    # print(num_of_rows)

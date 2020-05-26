@@ -18,7 +18,7 @@ Path(BASE_PATH).mkdir(parents=True,exist_ok=True)
 jobpath = Path(BASE_PATH, JOB_NAME)
 
 class PermutationAsString:
-    def __init__(self, elements, variations):
+    def __init__(self, elements, variations=None):
         # will return permutation of all pieces for every variation. 
         # arguments should be lists. Lists should not be empty.  elements list should be small, as permutations go faculty skyrocketting high. anything more than 10 elements is in the danger zone.
 
@@ -27,7 +27,9 @@ class PermutationAsString:
         
         self.variations = variations
         self.variation_index = 0
-        self.variation = self.variations[self.variation_index]
+
+        if self.variations is not None:
+            self.variation = self.variations[self.variation_index]
 
     def __iter__(self):
         return self
@@ -38,22 +40,35 @@ class PermutationAsString:
             s = next(self.permutations_sequences)
 
         except StopIteration:
+            if self.variations is None:
+                raise StopIteration
+
+            # if multiple variations enable next variation and restart iterator
             self.permutations_sequences = itertools.permutations(self.elements)
             self.variation_index += 1
             if self.variation_index >= len(self.variations):
                 raise StopIteration
             self.variation = self.variations[self.variation_index]
             s = next(self.permutations_sequences)
-            
-        return "{},{}".format(self.variation, ",".join(str(i) for i in s))
+        
+        if self.variations is None:
+            return "{}".format(",".join(str(i) for i in s))
 
-if __name__ == "__main__":
-    
-    piter = PermutationAsString (used_pieces, boards)
-    with open(jobpath,"w") as f:
+        else:
+            return "{},{}".format(self.variation, ",".join(str(i) for i in s))
+
+def all_permutations_to_file(filePath, elements, variations):
+
+    piter = PermutationAsString (elements, variations)
+    with open(filePath,"w") as f:
         # for i in range(100000):
 
             # s = next(piter)
         for s in piter:
             f.write("{}\n".format(s))
 
+if __name__ == "__main__":
+    # all_permutations_to_file(jobpath, used_pieces, boards)
+    piter = PermutationAsString ([12,3,4,5])
+    for p in piter:
+        print(p)

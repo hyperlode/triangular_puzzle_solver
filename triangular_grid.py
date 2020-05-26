@@ -1,5 +1,6 @@
 import traceback
 import copy
+import random
 # isometric grid, triangular grid.
 # has one extra cell at all borders internally. 
 
@@ -39,10 +40,28 @@ CELL_PIECE_COLLISION_WITH_PIECE= 2
 
 LEGAL_CELLS = [CELL_EDGE, CELL_NOGO, CELL_ON, CELL_OFF]
 
+CELL_ON_0 = 1000
+CELL_ON_1 = 1001
+CELL_ON_2 = 1002
+CELL_ON_3 = 1003
+CELL_ON_4 = 1004
+CELL_ON_5 = 1005
+CELL_ON_6 = 1006
+CELL_ON_7 = 1007
+CELL_ON_8 = 1008
 
 display_fill = {CELL_EDGE:"!", 
     CELL_NOGO:"-", 
     CELL_ON:"O", 
+    CELL_ON_0:"O", 
+    CELL_ON_1:"0", 
+    CELL_ON_2:"8", 
+    CELL_ON_3:"@", 
+    CELL_ON_4:"X", 
+    CELL_ON_5:"M", 
+    CELL_ON_6:"Q", 
+    CELL_ON_7:"B", 
+    CELL_ON_8:"W", 
     CELL_OFF:" ", 
     CELL_PIECE_COLLISION_WITH_EDGE:"?", 
     CELL_PIECE_COLLISION_WITH_NOGO:"W", 
@@ -98,10 +117,7 @@ class TriangularGrid():
         
         return None  # no free cells: means basically a full grid. in puzzle solving, that means: winner!
 
-
-
     def cell_to_internal_cell(self, cell):
- 
         r,c = cell
         return (r+1, c+1) # transform to internal board
 
@@ -161,8 +177,8 @@ class TriangularGrid():
                     pass 
             self._added_patterns.append(pattern)
             return self._cells
-        else:    
 
+        else:    
             return_cells = copy.deepcopy(self._cells)
             for cell, value in pattern.items():
                 r,c = cell
@@ -234,6 +250,13 @@ class TriangularGrid():
                     disp_fill_neighbour_right = display_fill[CELL_ERROR]
                     disp_fill_neighbour_left = display_fill[CELL_ERROR]
 
+                # # for fillchar in [disp_fill_current, disp_fill_neighbour_left, disp_fill_neighbour_right]:
+                # if disp_fill_current == display_fill[CELL_ON]:
+                #     disp_fill_current = display_fill[1000 + random.randint(0,8)]
+                # if disp_fill_neighbour_left == display_fill[CELL_ON]:
+                #     disp_fill_neighbour_left = display_fill[1000 + random.randint(0,8)]
+                # if disp_fill_neighbour_right == display_fill[CELL_ON]:
+                #     disp_fill_neighbour_right = display_fill[1000 + random.randint(0,8)]
 
                 if even_row:
                     if even_col:

@@ -95,7 +95,6 @@ class PuzzleSolver():
         if show_longest_state:
             self.build_up_state(board, pieces_with_orientations, longest_state, True)
 
-
         return pieces_tested, longest_state
         
     def try_sequence_recursive(self, board, try_sequence_of_pieces_index, pieces_with_orientations, state, last_tried=None):
@@ -314,10 +313,6 @@ class PuzzleSolver():
     #             if success:
     #                 board_per_piece.append()
     #                 next 
-
-
-
-
         
     def check_winning_board(self, board):
         # if not board.is_board_legal()
