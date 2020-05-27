@@ -8,6 +8,8 @@ import triangular_puzzle_solver
 import triangular_grid
 import triangular_pattern
 
+import solver_database
+
 
 
 # pieces, made up of small triangles.
@@ -377,14 +379,55 @@ def logger_setup():
     logger.setLevel(logging.INFO)
     return logger
 
-def solve_by_random(board, ):
 
-    state = [(0,0)]
-    last_tried = None
+
+def test_sequences_from_database_loop(boards):
+    conn = solver_database.create_connection(r"D:\Temp\puzzle_haley\attempts_no_boards.db")
+    sequences_count = 500
+    while True:
+        
+        id_first_row, sequences = solver_database.get_untested_sequences(conn, sequences_count)
+        logger.info("*****get new sequences from database. (rows taken:{}) id first row:{}".format(sequences_count, id_first_row))
+        # sequences.append([7,2,3,11,8,1,10,6,4,9,5])  # test to see if winners are detected.
+
+        try_sequences_for_all_boards(boards, sequences)
+        solver_database.set_sequences_as_tested(conn, sequences)
+
+def try_sequences_for_all_boards(boards, sequences_to_try=None):
+    # if no sequence to try provide (list of pieces to try in right sequence), a random one will be generated.
+
+    if sequences_to_try is None:
+        pieces_to_try_indeces =        [1,2,3,4,5,6,7,8,9,10,11]  # 0 is already placed on the board!\
+        # winning_sequence_for_testing = [7,2,3,11,8,1,10,6,4,9,5]  # 0 is already placed on the board!\
+         
+    tested_sequences = 0
+    pieces_tested_count = 0
+    for sequence_to_try in sequences_to_try:
+        tested_sequences += 1
+        try:
+            if sequences_to_try is None:
+                pieces_tested, longest_state, board_index = solver.analyse_randomize_sequence_of_pieces_on_multiple_boards(boards, pieces_with_orientations, pieces_to_try_indeces)
+            else:
+                pieces_tested, longest_state, board_index = solver.analyse_sequence_of_pieces_on_multiple_boards(boards, pieces_with_orientations, sequence_to_try)
+
+            pieces_tested_count += pieces_tested
+        except triangular_puzzle_solver.WinningSolutionFoundException as e:
+           
+            with open(r"D:\Temp\puzzle_haley\winners.txt","a") as f:
+                f.write("{}\n".format(str(sequence_to_try)))
+
+           
+        # if len(longest_state) >= 11:
+        #     logger.critical("winning sequence: {}".format(longest_state))
+            
+
+        logger.info('Tested sequences: {}, total pieces tested: {}'.format(tested_sequences, pieces_tested_count))
+
+def solve_by_random(board, ):
 
     pieces_to_try_indeces = [1,2,3,4,5,6,7,8,9,10,11]  # 0 is already placed on the board!\
     tested_sequences = 0
-    # stats = {}
+    
     while True:
         tested_sequences += 1
         pieces_tested, longest_state = solver.analyse_randomize_sequence_of_pieces(board, pieces_with_orientations, pieces_to_try_indeces)
@@ -445,9 +488,8 @@ def show_a_solution():
 
     solver.build_up_state(show_board, pieces_with_orientations, winning_states[2],True)
 
-if __name__ == "__main__":
-    show_a_solution()
-    exit()
+
+def test_manually(pieces_with_orientations):
 
     logger = logger_setup()
     solver = triangular_puzzle_solver.PuzzleSolver(logger)
@@ -458,6 +500,52 @@ if __name__ == "__main__":
         pieces_with_orientations, pieces_orientations_per_piece = prepare_puzzle_pieces(base_pieces_patterns)
     
     starting_puzzle_boards = prepare_base_boards_with_hexagon( pieces_with_orientations[0][0], base_board)
-    board = starting_puzzle_boards[0]
+    
+    
+    board = starting_puzzle_boards[1]
+    # seq = [(3,3)]
 
-    solve_by_random(board)
+    success = solver.try_piece_on_board(board, pieces_with_orientations[3][3])
+    success = solver.try_piece_on_board(board, pieces_with_orientations[8][11])
+
+    if not success:
+        print("Problemski!")
+
+    print(board)
+
+def solve_with_database(path_to_database):
+    pass
+
+
+if __name__ == "__main__":
+
+
+    # test_manually(pieces_with_orientations)
+    # exit()
+
+
+    # show_a_solution()
+    # exit()
+
+    logger = logger_setup()
+    solver = triangular_puzzle_solver.PuzzleSolver(logger)
+    logger.info("start Haley puzzle solving.")
+    
+    # only do if not hardcoded.
+    if GENERATE_PIECES:
+        pieces_with_orientations, pieces_orientations_per_piece = prepare_puzzle_pieces(base_pieces_patterns)
+    
+    starting_puzzle_boards = prepare_base_boards_with_hexagon( pieces_with_orientations[0][0], base_board)
+    
+
+
+    # try_sequences_for_all_boards(starting_puzzle_boards, sequences_to_try= [[7,2,3,11,8,1,10,6,4,9,5]])
+    test_sequences_from_database_loop(starting_puzzle_boards)
+    
+    # solve_with_database
+   
+
+    # board = starting_puzzle_boards[0]
+    # solve_by_random(board)
+
+    # solve_sequence_for_all_boards(starting_puzzle_boards, None)

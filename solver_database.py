@@ -3,6 +3,7 @@ from sqlite3 import Error
 
 import haley_puzzle_create_multithreading_task as haley_puzzle_attempts
 
+
 '''
 https://www.sqlitetutorial.net/sqlite-python/creating-database/
 '''
@@ -67,16 +68,30 @@ def get_all_records(conn, table):
     data = cur.fetchall()
     return data
 
+def get_row_count(conn, table_name):
+    result = execute_sql(conn, "select count(*) from {}".format(table_name))
+    row = result.fetchone()
+    return row[0]
+
+def get_rows(conn, table, limit=100):
+    sql = "SELECT * FROM {} LIMIT {}".format(table, limit)
+    cur = execute_sql(conn, sql)
+    data = cur.fetchall()
+    return data
+
 def execute_sql(conn, sql):
     cur = conn.cursor()
     cur.execute(sql)
     return cur
 
-
+def execute_sql_return_rows(conn, sql):
+    cur = conn.cursor()
+    cur.execute(sql)
+    data = cur.fetchall()
+    return data
 
 def setup_haley_puzzle_attempts_no_boards():
     conn = create_connection(r"D:\Temp\puzzle_haley\attempts_no_boards.db")
-
    
     # all used pieces indeces
     used_pieces = [1,2,3,4,5,6,7,8,9,10,11]
@@ -150,14 +165,53 @@ def setup_haley_puzzle_attempts():
     records = get_all_records(conn, "attempts")
     # for r in records[:110]:
     #     print(r)
-        
+
+def get_untested_sequences(conn, count = 1000, print_result=False):
+
+    result = execute_sql_return_rows(conn, " SELECT * from 'attempts' where is_tested != 1 and is_tested != 666 LIMIT {}".format(count))
+    sequences = []
+    if print_result:
+        print(result)
+    id_of_first_row = result[0][0]
+    for row in result:
+        sequences.append( [int(i) for i in row[1].split(",")])
+    
+    set_sequences_as_tested(conn, sequences, tested_value=666)
+    
+    return id_of_first_row, sequences
+
+def set_sequences_as_tested(conn, sequences, tested_value=1):
+    # expect sequence as array of ints. (will convert to string)
+    # print(sequences)
+    sequences_str = [",".join(str(el) for el in seq) for seq in sequences]
+    
+    # print(sequences_str)
+    for seq in sequences_str:
+        sql_statement = "UPDATE attempts SET is_tested = {} WHERE sequence = '{}'".format(tested_value, seq)
+        # print(sql_statement)
+        result = execute_sql_return_rows(conn, sql_statement )
+    commit(conn)
+
 if __name__ == '__main__':
    # conn = create_connection(r"C:\temp\haley_puzzle\pythonsqlite.db")
-    # conn = create_connection(r"D:\Temp\puzzle_haley\attempts.db")
+    conn = create_connection(r"D:\Temp\puzzle_haley\attempts_no_boards.db")
 
-    setup_haley_puzzle_attempts_no_boards()
+    # setup_haley_puzzle_attempts_no_boards()
+  
+    # result = get_row_count(conn, "attempts")
+    # result = get_rows(conn, "attempts")
+    # winner: '7,2,3,11,8,1,10,6,4,9,5'
+   
+    # s = get_untested_sequences(conn, count = 10)
 
-    # result = execute_sql(conn, "select count(*) from attempts")
+    # set_sequences_as_tested(conn, s)
 
-    # num_of_rows = result[0][0]
-    # print(num_of_rows)
+    id_f, s = get_untested_sequences(conn, count = 10, print_result=True)
+    print(s)
+    print(id_f)
+
+    # result = execute_sql_return_rows(conn, "UPDATE attempts SET is_solution = 1 WHERE sequence = '7,2,3,11,8,1,10,6,4,9,5'")
+    # commit(conn)
+    # print(result)
+
+

@@ -5,6 +5,9 @@ import random
 import triangular_grid
 import triangular_pattern
 
+class WinningSolutionFoundException(Exception):
+   
+    print("WE have a winnner.")
 
 
 class PuzzleSolver():
@@ -69,6 +72,28 @@ class PuzzleSolver():
 
         return total_pieces_tested, combined_longest_state
 
+    def analyse_randomize_sequence_of_pieces_on_multiple_boards(self, boards, pieces_with_orientations, pieces_indeces):
+       random.shuffle(pieces_indeces)
+       pieces_tested, longest_state, board_index = self.analyse_sequence_of_pieces_on_multiple_boards(boards, pieces_with_orientations, pieces_indeces)
+       return pieces_tested, longest_state, board_index
+
+    def analyse_sequence_of_pieces_on_multiple_boards(self, boards, pieces_with_orientations, sequence_of_pieces_indeces_to_try):
+        total_pieces_tested_count = 0
+        total_longest_state = []
+        total_longest_state_board_index = None
+        #self.logger.info("Start trying pieces sequence. (all orientations, top left to bottom right): {}".format(sequence_of_pieces_indeces_to_try))
+        
+        for board_index, board in enumerate(boards):
+            # self.logger.info("board index: {}".format(board_index))
+            pieces_tested, longest_state = self.analyse_sequence_of_pieces(board, pieces_with_orientations, sequence_of_pieces_indeces_to_try)
+            total_pieces_tested_count += pieces_tested
+            if len(longest_state) > len(total_longest_state):
+                total_longest_state = longest_state
+                total_longest_state_board_index = board_index
+        
+        #self.logger.info("Testing sequence endend. Pieces tested on all boards:{}. longest state length (on board{}): {}/{} ({})".format(total_pieces_tested_count, total_longest_state_board_index, len(longest_state), len(sequence_of_pieces_indeces_to_try), longest_state))
+        return total_pieces_tested_count, total_longest_state, total_longest_state_board_index
+
     def analyse_randomize_sequence_of_pieces(self, board, pieces_with_orientations, pieces_indeces):
        random.shuffle(pieces_indeces)
        pieces_tested, longest_state = self.analyse_sequence_of_pieces(board, pieces_with_orientations, pieces_indeces, show_longest_state=False)
@@ -76,7 +101,7 @@ class PuzzleSolver():
 
     def analyse_sequence_of_pieces(self, board, pieces_with_orientations, sequence_of_pieces_indeces_to_try, show_longest_state=False):
 
-        self.logger.info("Start trying pieces sequence. (all orientations, top left to bottom right): {}".format(sequence_of_pieces_indeces_to_try))
+        # self.logger.info("Start trying pieces sequence. (all orientations, top left to bottom right): {}".format(sequence_of_pieces_indeces_to_try))
         state = []
         try_board = copy.deepcopy(board)
         
@@ -84,18 +109,18 @@ class PuzzleSolver():
             try_board = self.build_up_state(try_board, pieces_with_orientations, state)
         success, state = self.try_sequence_recursive(try_board, sequence_of_pieces_indeces_to_try, pieces_with_orientations, state)
 
-        pieces_tested = self.tested_pieces
+        pieces_tested_count = self.tested_pieces
         longest_state = self.state_saver[::]
         
         self.state_saver = []
         self.tested_pieces = 0 
         
-        self.logger.info("Testing endend. Pieces tested:{}. Found? {}, state: {}. longest state length: {}/{} ({})".format(pieces_tested, success, state, len(longest_state), len(sequence_of_pieces_indeces_to_try), longest_state))
+        # self.logger.info("Testing endend. Pieces tested:{}. Found? {}, state: {}. longest state length: {}/{} ({})".format(pieces_tested_count, success, state, len(longest_state), len(sequence_of_pieces_indeces_to_try), longest_state))
 
         if show_longest_state:
             self.build_up_state(board, pieces_with_orientations, longest_state, True)
 
-        return pieces_tested, longest_state
+        return pieces_tested_count, longest_state
         
     def try_sequence_recursive(self, board, try_sequence_of_pieces_index, pieces_with_orientations, state, last_tried=None):
         # pieces_with_orientations_contains the right sequence in which piece are tried. We will not swap pieces.
@@ -105,14 +130,13 @@ class PuzzleSolver():
             self.logger.debug(str(board))
             self.state_saver = state
 
-
         #print(state)
         # stop condition
         if len(state) == 11:
             self.logger.info("We have a winner!")
             self.logger.info(state)
-            raise
-        
+            raise WinningSolutionFoundException
+                    
         # assume board populated according to state.
         if last_tried is None:
             # take next piece with first iteration
@@ -169,47 +193,6 @@ class PuzzleSolver():
                 all_tested = True
           
         return False, state
-
-    # def next_step(self, board, pieces_with_orientations, state, last_tried=None):
-    #     # pieces_with_orientations_contains the right sequence in which piece are tried. We will not swap pieces.
-    #     # state  = sequence [(firstpieceindex,orientationindex),(secondpieceindex,orientationindex),...]
-
-
-    #     used_pieces = [piece_index for piece_index, orientation in state]
-    #     unused_pieces = [i for i in range(12) if i not in used_pieces] # retain order!
-
-    #     # stop condition
-    #     if len(unused_pieces) == 0:
-    #         print("We have a winner!")
-    #         print(state)
-    #         raise
-
-
-    #     # assume board populated according to state.
-    #     if last_tried is None:
-
-    #         # take next piece with first iteration
-    #             # search next piece
-    #         try_piece_index = unused_pieces.pop(0)
-    #         print(unused_pieces)
-            
-    #         orientation_index_offset = 0
-    #     else:
-    #         # only use to restart for a certain state.
-    #         try_piece_index, orientation_index_offset= last_tried          
-
-    #     # try orientations.
-    #     try_pieces = pieces_with_orientations[try_piece_index][orientation_index_offset:]
-
-    #     success, orientation_index = self.try_pieces_on_board(board, try_pieces  )
-
-    #     if success:
-    #         orientation_index += orientation_index_offset
-    #         state.append((try_piece_index, orientation_index))
-    #         return True, state
-    #     else:
-    #         return False, state
-
 
     def try_pieces_on_board(self, board, pieces, start_piece_index=0):
         # check if any of the pieces fits on top left of board. if so, return new board and piece index.
