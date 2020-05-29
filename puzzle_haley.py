@@ -210,154 +210,130 @@ base_board[(7,11)] = triangular_grid.CELL_NOGO
 base_board[(7,12)] = triangular_grid.CELL_NOGO
 
 
-# these are the hardcode prepared pieces ( use: prepare_puzzle_pieces() )
-# generated cropped pieces and their configurations
+
 GENERATE_PIECES = False
-pieces_with_orientations = [
-    [{(0, 0): 1, (0, 1): 1, (0, 2): 1, (1, 0): 1, (1, 1): 1, (1, 2): 1}],
+# only do if not hardcoded.
+if GENERATE_PIECES:
+    pieces_with_orientations, pieces_orientations_per_piece = prepare_puzzle_pieces(base_pieces_patterns)
 
-    [{(0, 1): 1, (0, 2): 1, (0, 3): 1, (1, 1): 1, (1, 2): 1, (1, 3): 1},
-    {(1, 1): 1, (1, 2): 1, (0, 2): 1, (2, 3): 1, (1, 3): 1, (1, 4): 1},
-    {(2, 1): 1, (1, 1): 1, (1, 0): 1, (1, 3): 1, (1, 2): 1, (0, 2): 1}],
+else:
+    # these are the hardcode prepared pieces ( use: prepare_puzzle_pieces() )
+    # generated cropped pieces and their configurations
+    pieces_with_orientations = [
+        [{(0, 0): 1, (0, 1): 1, (0, 2): 1, (1, 0): 1, (1, 1): 1, (1, 2): 1}],
 
-    [{(0, 2): 1, (1, 0): 1, (1, 1): 1, (1, 2): 1, (1, 3): 1, (1, 4): 1},
-    {(1, 0): 1, (2, 0): 1, (2, 1): 1, (1, 1): 1, (1, 2): 1, (0, 2): 1},
-    {(1, 1): 1, (2, 3): 1, (1, 3): 1, (1, 2): 1, (0, 2): 1, (0, 1): 1},
-    {(1, 2): 1, (0, 4): 1, (0, 3): 1, (0, 2): 1, (0, 1): 1, (0, 0): 1},
-    {(1, 3): 1, (0, 3): 1, (0, 2): 1, (1, 2): 1, (1, 1): 1, (2, 1): 1},
-    {(1, 2): 1, (0, 0): 1, (1, 0): 1, (1, 1): 1, (2, 1): 1, (2, 2): 1}],
+        [{(0, 1): 1, (0, 2): 1, (0, 3): 1, (1, 1): 1, (1, 2): 1, (1, 3): 1},
+        {(1, 1): 1, (1, 2): 1, (0, 2): 1, (2, 3): 1, (1, 3): 1, (1, 4): 1},
+        {(2, 1): 1, (1, 1): 1, (1, 0): 1, (1, 3): 1, (1, 2): 1, (0, 2): 1}],
 
-    [{(0, 0): 1, (0, 1): 1, (0, 2): 1, (1, 2): 1, (1, 3): 1, (1, 4): 1},
-    {(2, 1): 1, (1, 1): 1, (1, 2): 1, (1, 3): 1, (1, 4): 1, (0, 4): 1},
-    {(2, 2): 1, (2, 1): 1, (1, 1): 1, (1, 2): 1, (0, 2): 1, (0, 1): 1},
-    {(1, 0): 1, (1, 1): 1, (1, 2): 1, (0, 2): 1, (0, 3): 1, (0, 4): 1},
-    {(2, 0): 1, (2, 1): 1, (1, 1): 1, (1, 0): 1, (0, 0): 1, (0, 1): 1},
-    {(2, 3): 1, (1, 3): 1, (1, 2): 1, (1, 1): 1, (1, 0): 1, (0, 0): 1}],
+        [{(0, 2): 1, (1, 0): 1, (1, 1): 1, (1, 2): 1, (1, 3): 1, (1, 4): 1},
+        {(1, 0): 1, (2, 0): 1, (2, 1): 1, (1, 1): 1, (1, 2): 1, (0, 2): 1},
+        {(1, 1): 1, (2, 3): 1, (1, 3): 1, (1, 2): 1, (0, 2): 1, (0, 1): 1},
+        {(1, 2): 1, (0, 4): 1, (0, 3): 1, (0, 2): 1, (0, 1): 1, (0, 0): 1},
+        {(1, 3): 1, (0, 3): 1, (0, 2): 1, (1, 2): 1, (1, 1): 1, (2, 1): 1},
+        {(1, 2): 1, (0, 0): 1, (1, 0): 1, (1, 1): 1, (2, 1): 1, (2, 2): 1}],
 
-    [{(0, 4): 1, (0, 5): 1, (1, 1): 1, (1, 2): 1, (1, 3): 1, (1, 4): 1},
-    {(1, 0): 1, (0, 0): 1, (3, 0): 1, (2, 0): 1, (2, 1): 1, (1, 1): 1},
-    {(0, 2): 1, (0, 1): 1, (1, 5): 1, (1, 4): 1, (0, 4): 1, (0, 3): 1},
-    {(1, 2): 1, (1, 1): 1, (0, 5): 1, (0, 4): 1, (0, 3): 1, (0, 2): 1},
-    {(2, 2): 1, (3, 2): 1, (0, 2): 1, (1, 2): 1, (1, 1): 1, (2, 1): 1},
-    {(1, 4): 1, (1, 5): 1, (0, 1): 1, (0, 2): 1, (1, 2): 1, (1, 3): 1}],
+        [{(0, 0): 1, (0, 1): 1, (0, 2): 1, (1, 2): 1, (1, 3): 1, (1, 4): 1},
+        {(2, 1): 1, (1, 1): 1, (1, 2): 1, (1, 3): 1, (1, 4): 1, (0, 4): 1},
+        {(2, 2): 1, (2, 1): 1, (1, 1): 1, (1, 2): 1, (0, 2): 1, (0, 1): 1},
+        {(1, 0): 1, (1, 1): 1, (1, 2): 1, (0, 2): 1, (0, 3): 1, (0, 4): 1},
+        {(2, 0): 1, (2, 1): 1, (1, 1): 1, (1, 0): 1, (0, 0): 1, (0, 1): 1},
+        {(2, 3): 1, (1, 3): 1, (1, 2): 1, (1, 1): 1, (1, 0): 1, (0, 0): 1}],
 
-    [{(0, 0): 1, (0, 1): 1, (0, 2): 1, (0, 3): 1, (0, 4): 1, (0, 5): 1},
-    {(3, 0): 1, (2, 0): 1, (2, 1): 1, (1, 1): 1, (1, 2): 1, (0, 2): 1},
-    {(2, 4): 1, (2, 3): 1, (1, 3): 1, (1, 2): 1, (0, 2): 1, (0, 1): 1},
-    {(0, 1): 1, (0, 2): 1, (0, 3): 1, (0, 4): 1, (0, 5): 1, (0, 6): 1},
-    {(2, 0): 1, (2, 1): 1, (1, 1): 1, (1, 2): 1, (0, 2): 1, (0, 3): 1},
-    {(3, 2): 1, (2, 2): 1, (2, 1): 1, (1, 1): 1, (1, 0): 1, (0, 0): 1}],
+        [{(0, 4): 1, (0, 5): 1, (1, 1): 1, (1, 2): 1, (1, 3): 1, (1, 4): 1},
+        {(1, 0): 1, (0, 0): 1, (3, 0): 1, (2, 0): 1, (2, 1): 1, (1, 1): 1},
+        {(0, 2): 1, (0, 1): 1, (1, 5): 1, (1, 4): 1, (0, 4): 1, (0, 3): 1},
+        {(1, 2): 1, (1, 1): 1, (0, 5): 1, (0, 4): 1, (0, 3): 1, (0, 2): 1},
+        {(2, 2): 1, (3, 2): 1, (0, 2): 1, (1, 2): 1, (1, 1): 1, (2, 1): 1},
+        {(1, 4): 1, (1, 5): 1, (0, 1): 1, (0, 2): 1, (1, 2): 1, (1, 3): 1}],
 
-    [{(0, 0): 1, (0, 1): 1, (0, 2): 1, (0, 3): 1, (1, 1): 1, (1, 2): 1},
-    {(2, 1): 1, (1, 1): 1, (1, 2): 1, (0, 2): 1, (2, 3): 1, (1, 3): 1},
-    {(1, 3): 1, (1, 2): 1, (0, 2): 1, (0, 1): 1, (0, 4): 1, (0, 3): 1},
-    {(1, 4): 1, (1, 3): 1, (1, 2): 1, (1, 1): 1, (0, 3): 1, (0, 2): 1},
-    {(0, 2): 1, (1, 2): 1, (1, 1): 1, (2, 1): 1, (0, 0): 1, (1, 0): 1},
-    {(0, 1): 1, (0, 2): 1, (1, 2): 1, (1, 3): 1, (1, 0): 1, (1, 1): 1}],
+        [{(0, 0): 1, (0, 1): 1, (0, 2): 1, (0, 3): 1, (0, 4): 1, (0, 5): 1},
+        {(3, 0): 1, (2, 0): 1, (2, 1): 1, (1, 1): 1, (1, 2): 1, (0, 2): 1},
+        {(2, 4): 1, (2, 3): 1, (1, 3): 1, (1, 2): 1, (0, 2): 1, (0, 1): 1},
+        {(0, 1): 1, (0, 2): 1, (0, 3): 1, (0, 4): 1, (0, 5): 1, (0, 6): 1},
+        {(2, 0): 1, (2, 1): 1, (1, 1): 1, (1, 2): 1, (0, 2): 1, (0, 3): 1},
+        {(3, 2): 1, (2, 2): 1, (2, 1): 1, (1, 1): 1, (1, 0): 1, (0, 0): 1}],
 
-    [{(0, 0): 1, (0, 1): 1, (1, 0): 1, (1, 1): 1, (1, 2): 1, (1, 3): 1},
-    {(1, 0): 1, (0, 0): 1, (1, 1): 1, (1, 2): 1, (0, 2): 1, (0, 3): 1},
-    {(2, 2): 1, (2, 1): 1, (2, 3): 1, (1, 3): 1, (1, 2): 1, (0, 2): 1},
-    {(1, 4): 1, (1, 3): 1, (0, 4): 1, (0, 3): 1, (0, 2): 1, (0, 1): 1},
-    {(0, 4): 1, (1, 4): 1, (0, 3): 1, (0, 2): 1, (1, 2): 1, (1, 1): 1},
-    {(0, 1): 1, (0, 2): 1, (0, 0): 1, (1, 0): 1, (1, 1): 1, (2, 1): 1},
-    {(1, 0): 1, (1, 1): 1, (0, 0): 1, (0, 1): 1, (0, 2): 1, (0, 3): 1},
-    {(2, 2): 1, (2, 3): 1, (2, 1): 1, (1, 1): 1, (1, 2): 1, (0, 2): 1},
-    {(1, 4): 1, (0, 4): 1, (1, 3): 1, (1, 2): 1, (0, 2): 1, (0, 1): 1},
-    {(0, 4): 1, (0, 3): 1, (1, 4): 1, (1, 3): 1, (1, 2): 1, (1, 1): 1},
-    {(0, 1): 1, (0, 0): 1, (0, 2): 1, (1, 2): 1, (1, 1): 1, (2, 1): 1},
-    {(0, 0): 1, (1, 0): 1, (0, 1): 1, (0, 2): 1, (1, 2): 1, (1, 3): 1}],
+        [{(0, 0): 1, (0, 1): 1, (0, 2): 1, (0, 3): 1, (1, 1): 1, (1, 2): 1},
+        {(2, 1): 1, (1, 1): 1, (1, 2): 1, (0, 2): 1, (2, 3): 1, (1, 3): 1},
+        {(1, 3): 1, (1, 2): 1, (0, 2): 1, (0, 1): 1, (0, 4): 1, (0, 3): 1},
+        {(1, 4): 1, (1, 3): 1, (1, 2): 1, (1, 1): 1, (0, 3): 1, (0, 2): 1},
+        {(0, 2): 1, (1, 2): 1, (1, 1): 1, (2, 1): 1, (0, 0): 1, (1, 0): 1},
+        {(0, 1): 1, (0, 2): 1, (1, 2): 1, (1, 3): 1, (1, 0): 1, (1, 1): 1}],
 
-    [{(0, 0): 1, (1, 0): 1, (1, 1): 1, (1, 2): 1, (1, 3): 1, (1, 4): 1},
-    {(2, 1): 1, (2, 2): 1, (2, 3): 1, (1, 3): 1, (1, 4): 1, (0, 4): 1},
-    {(2, 2): 1, (2, 3): 1, (1, 3): 1, (1, 2): 1, (0, 2): 1, (0, 1): 1},
-    {(1, 4): 1, (0, 4): 1, (0, 3): 1, (0, 2): 1, (0, 1): 1, (0, 0): 1},
-    {(0, 4): 1, (0, 3): 1, (0, 2): 1, (1, 2): 1, (1, 1): 1, (2, 1): 1},
-    {(0, 1): 1, (0, 0): 1, (1, 0): 1, (1, 1): 1, (2, 1): 1, (2, 2): 1},
-    {(1, 0): 1, (0, 0): 1, (0, 1): 1, (0, 2): 1, (0, 3): 1, (0, 4): 1},
-    {(2, 2): 1, (2, 1): 1, (1, 1): 1, (1, 2): 1, (0, 2): 1, (0, 3): 1},
-    {(2, 3): 1, (2, 2): 1, (2, 1): 1, (1, 1): 1, (1, 0): 1, (0, 0): 1},
-    {(0, 4): 1, (1, 4): 1, (1, 3): 1, (1, 2): 1, (1, 1): 1, (1, 0): 1},
-    {(0, 1): 1, (0, 2): 1, (1, 2): 1, (1, 1): 1, (2, 1): 1, (2, 0): 1},
-    {(0, 0): 1, (0, 1): 1, (0, 2): 1, (1, 2): 1, (1, 3): 1, (2, 3): 1}],
+        [{(0, 0): 1, (0, 1): 1, (1, 0): 1, (1, 1): 1, (1, 2): 1, (1, 3): 1},
+        {(1, 0): 1, (0, 0): 1, (1, 1): 1, (1, 2): 1, (0, 2): 1, (0, 3): 1},
+        {(2, 2): 1, (2, 1): 1, (2, 3): 1, (1, 3): 1, (1, 2): 1, (0, 2): 1},
+        {(1, 4): 1, (1, 3): 1, (0, 4): 1, (0, 3): 1, (0, 2): 1, (0, 1): 1},
+        {(0, 4): 1, (1, 4): 1, (0, 3): 1, (0, 2): 1, (1, 2): 1, (1, 1): 1},
+        {(0, 1): 1, (0, 2): 1, (0, 0): 1, (1, 0): 1, (1, 1): 1, (2, 1): 1},
+        {(1, 0): 1, (1, 1): 1, (0, 0): 1, (0, 1): 1, (0, 2): 1, (0, 3): 1},
+        {(2, 2): 1, (2, 3): 1, (2, 1): 1, (1, 1): 1, (1, 2): 1, (0, 2): 1},
+        {(1, 4): 1, (0, 4): 1, (1, 3): 1, (1, 2): 1, (0, 2): 1, (0, 1): 1},
+        {(0, 4): 1, (0, 3): 1, (1, 4): 1, (1, 3): 1, (1, 2): 1, (1, 1): 1},
+        {(0, 1): 1, (0, 0): 1, (0, 2): 1, (1, 2): 1, (1, 1): 1, (2, 1): 1},
+        {(0, 0): 1, (1, 0): 1, (0, 1): 1, (0, 2): 1, (1, 2): 1, (1, 3): 1}],
 
-    [{(0, 0): 1, (0, 1): 1, (0, 2): 1, (1, 1): 1, (1, 2): 1, (1, 3): 1},
-    {(1, 0): 1, (0, 0): 1, (0, 1): 1, (1, 2): 1, (0, 2): 1, (0, 3): 1},
-    {(2, 2): 1, (2, 1): 1, (1, 1): 1, (1, 3): 1, (1, 2): 1, (0, 2): 1},
-    {(1, 4): 1, (1, 3): 1, (1, 2): 1, (0, 3): 1, (0, 2): 1, (0, 1): 1},
-    {(0, 4): 1, (1, 4): 1, (1, 3): 1, (0, 2): 1, (1, 2): 1, (1, 1): 1},
-    {(0, 1): 1, (0, 2): 1, (1, 2): 1, (1, 0): 1, (1, 1): 1, (2, 1): 1},
-    {(1, 0): 1, (1, 1): 1, (1, 2): 1, (0, 1): 1, (0, 2): 1, (0, 3): 1},
-    {(2, 2): 1, (2, 3): 1, (1, 3): 1, (1, 1): 1, (1, 2): 1, (0, 2): 1},
-    {(1, 4): 1, (0, 4): 1, (0, 3): 1, (1, 2): 1, (0, 2): 1, (0, 1): 1},
-    {(0, 4): 1, (0, 3): 1, (0, 2): 1, (1, 3): 1, (1, 2): 1, (1, 1): 1},
-    {(0, 1): 1, (0, 0): 1, (1, 0): 1, (1, 2): 1, (1, 1): 1, (2, 1): 1},
-    {(0, 0): 1, (1, 0): 1, (1, 1): 1, (0, 2): 1, (1, 2): 1, (1, 3): 1}],
+        [{(0, 0): 1, (1, 0): 1, (1, 1): 1, (1, 2): 1, (1, 3): 1, (1, 4): 1},
+        {(2, 1): 1, (2, 2): 1, (2, 3): 1, (1, 3): 1, (1, 4): 1, (0, 4): 1},
+        {(2, 2): 1, (2, 3): 1, (1, 3): 1, (1, 2): 1, (0, 2): 1, (0, 1): 1},
+        {(1, 4): 1, (0, 4): 1, (0, 3): 1, (0, 2): 1, (0, 1): 1, (0, 0): 1},
+        {(0, 4): 1, (0, 3): 1, (0, 2): 1, (1, 2): 1, (1, 1): 1, (2, 1): 1},
+        {(0, 1): 1, (0, 0): 1, (1, 0): 1, (1, 1): 1, (2, 1): 1, (2, 2): 1},
+        {(1, 0): 1, (0, 0): 1, (0, 1): 1, (0, 2): 1, (0, 3): 1, (0, 4): 1},
+        {(2, 2): 1, (2, 1): 1, (1, 1): 1, (1, 2): 1, (0, 2): 1, (0, 3): 1},
+        {(2, 3): 1, (2, 2): 1, (2, 1): 1, (1, 1): 1, (1, 0): 1, (0, 0): 1},
+        {(0, 4): 1, (1, 4): 1, (1, 3): 1, (1, 2): 1, (1, 1): 1, (1, 0): 1},
+        {(0, 1): 1, (0, 2): 1, (1, 2): 1, (1, 1): 1, (2, 1): 1, (2, 0): 1},
+        {(0, 0): 1, (0, 1): 1, (0, 2): 1, (1, 2): 1, (1, 3): 1, (2, 3): 1}],
 
-    [{(0, 2): 1, (1, 1): 1, (1, 2): 1, (1, 3): 1, (1, 4): 1, (1, 5): 1},
-    {(1, 0): 1, (2, 1): 1, (1, 1): 1, (1, 2): 1, (0, 2): 1, (0, 3): 1},
-    {(2, 0): 1, (2, 2): 1, (2, 1): 1, (1, 1): 1, (1, 0): 1, (0, 0): 1},
-    {(1, 4): 1, (0, 5): 1, (0, 4): 1, (0, 3): 1, (0, 2): 1, (0, 1): 1},
-    {(1, 3): 1, (0, 2): 1, (1, 2): 1, (1, 1): 1, (2, 1): 1, (2, 0): 1},
-    {(0, 3): 1, (0, 1): 1, (0, 2): 1, (1, 2): 1, (1, 3): 1, (2, 3): 1},
-    {(1, 2): 1, (0, 1): 1, (0, 2): 1, (0, 3): 1, (0, 4): 1, (0, 5): 1},
-    {(2, 2): 1, (2, 0): 1, (2, 1): 1, (1, 1): 1, (1, 2): 1, (0, 2): 1},
-    {(1, 4): 1, (2, 3): 1, (1, 3): 1, (1, 2): 1, (0, 2): 1, (0, 1): 1},
-    {(0, 4): 1, (1, 5): 1, (1, 4): 1, (1, 3): 1, (1, 2): 1, (1, 1): 1},
-    {(0, 1): 1, (0, 3): 1, (0, 2): 1, (1, 2): 1, (1, 1): 1, (2, 1): 1},
-    {(1, 1): 1, (0, 2): 1, (1, 2): 1, (1, 3): 1, (2, 3): 1, (2, 4): 1}],
+        [{(0, 0): 1, (0, 1): 1, (0, 2): 1, (1, 1): 1, (1, 2): 1, (1, 3): 1},
+        {(1, 0): 1, (0, 0): 1, (0, 1): 1, (1, 2): 1, (0, 2): 1, (0, 3): 1},
+        {(2, 2): 1, (2, 1): 1, (1, 1): 1, (1, 3): 1, (1, 2): 1, (0, 2): 1},
+        {(1, 4): 1, (1, 3): 1, (1, 2): 1, (0, 3): 1, (0, 2): 1, (0, 1): 1},
+        {(0, 4): 1, (1, 4): 1, (1, 3): 1, (0, 2): 1, (1, 2): 1, (1, 1): 1},
+        {(0, 1): 1, (0, 2): 1, (1, 2): 1, (1, 0): 1, (1, 1): 1, (2, 1): 1},
+        {(1, 0): 1, (1, 1): 1, (1, 2): 1, (0, 1): 1, (0, 2): 1, (0, 3): 1},
+        {(2, 2): 1, (2, 3): 1, (1, 3): 1, (1, 1): 1, (1, 2): 1, (0, 2): 1},
+        {(1, 4): 1, (0, 4): 1, (0, 3): 1, (1, 2): 1, (0, 2): 1, (0, 1): 1},
+        {(0, 4): 1, (0, 3): 1, (0, 2): 1, (1, 3): 1, (1, 2): 1, (1, 1): 1},
+        {(0, 1): 1, (0, 0): 1, (1, 0): 1, (1, 2): 1, (1, 1): 1, (2, 1): 1},
+        {(0, 0): 1, (1, 0): 1, (1, 1): 1, (0, 2): 1, (1, 2): 1, (1, 3): 1}],
 
-    [{(0, 0): 1, (0, 1): 1, (0, 2): 1, (0, 3): 1, (1, 2): 1, (1, 3): 1},
-    {(2, 1): 1, (1, 1): 1, (1, 2): 1, (0, 2): 1, (1, 3): 1, (1, 4): 1},
-    {(2, 2): 1, (2, 1): 1, (1, 1): 1, (1, 0): 1, (1, 2): 1, (0, 2): 1},
-    {(1, 4): 1, (1, 3): 1, (1, 2): 1, (1, 1): 1, (0, 2): 1, (0, 1): 1},
-    {(0, 4): 1, (1, 4): 1, (1, 3): 1, (2, 3): 1, (1, 2): 1, (1, 1): 1},
-    {(0, 1): 1, (0, 2): 1, (1, 2): 1, (1, 3): 1, (1, 1): 1, (2, 1): 1},
-    {(1, 0): 1, (1, 1): 1, (1, 2): 1, (1, 3): 1, (0, 2): 1, (0, 3): 1},
-    {(2, 0): 1, (2, 1): 1, (1, 1): 1, (1, 2): 1, (1, 0): 1, (0, 0): 1},
-    {(2, 3): 1, (1, 3): 1, (1, 2): 1, (0, 2): 1, (1, 1): 1, (1, 0): 1},
-    {(0, 4): 1, (0, 3): 1, (0, 2): 1, (0, 1): 1, (1, 2): 1, (1, 1): 1},
-    {(0, 3): 1, (0, 2): 1, (1, 2): 1, (1, 1): 1, (1, 3): 1, (2, 3): 1},
-    {(0, 0): 1, (1, 0): 1, (1, 1): 1, (2, 1): 1, (1, 2): 1, (1, 3): 1}],
-    ]
+        [{(0, 2): 1, (1, 1): 1, (1, 2): 1, (1, 3): 1, (1, 4): 1, (1, 5): 1},
+        {(1, 0): 1, (2, 1): 1, (1, 1): 1, (1, 2): 1, (0, 2): 1, (0, 3): 1},
+        {(2, 0): 1, (2, 2): 1, (2, 1): 1, (1, 1): 1, (1, 0): 1, (0, 0): 1},
+        {(1, 4): 1, (0, 5): 1, (0, 4): 1, (0, 3): 1, (0, 2): 1, (0, 1): 1},
+        {(1, 3): 1, (0, 2): 1, (1, 2): 1, (1, 1): 1, (2, 1): 1, (2, 0): 1},
+        {(0, 3): 1, (0, 1): 1, (0, 2): 1, (1, 2): 1, (1, 3): 1, (2, 3): 1},
+        {(1, 2): 1, (0, 1): 1, (0, 2): 1, (0, 3): 1, (0, 4): 1, (0, 5): 1},
+        {(2, 2): 1, (2, 0): 1, (2, 1): 1, (1, 1): 1, (1, 2): 1, (0, 2): 1},
+        {(1, 4): 1, (2, 3): 1, (1, 3): 1, (1, 2): 1, (0, 2): 1, (0, 1): 1},
+        {(0, 4): 1, (1, 5): 1, (1, 4): 1, (1, 3): 1, (1, 2): 1, (1, 1): 1},
+        {(0, 1): 1, (0, 3): 1, (0, 2): 1, (1, 2): 1, (1, 1): 1, (2, 1): 1},
+        {(1, 1): 1, (0, 2): 1, (1, 2): 1, (1, 3): 1, (2, 3): 1, (2, 4): 1}],
 
-pieces_orientations_per_piece = [1, 3, 6, 6, 6, 6, 6, 12, 12, 12, 12, 12]
+        [{(0, 0): 1, (0, 1): 1, (0, 2): 1, (0, 3): 1, (1, 2): 1, (1, 3): 1},
+        {(2, 1): 1, (1, 1): 1, (1, 2): 1, (0, 2): 1, (1, 3): 1, (1, 4): 1},
+        {(2, 2): 1, (2, 1): 1, (1, 1): 1, (1, 0): 1, (1, 2): 1, (0, 2): 1},
+        {(1, 4): 1, (1, 3): 1, (1, 2): 1, (1, 1): 1, (0, 2): 1, (0, 1): 1},
+        {(0, 4): 1, (1, 4): 1, (1, 3): 1, (2, 3): 1, (1, 2): 1, (1, 1): 1},
+        {(0, 1): 1, (0, 2): 1, (1, 2): 1, (1, 3): 1, (1, 1): 1, (2, 1): 1},
+        {(1, 0): 1, (1, 1): 1, (1, 2): 1, (1, 3): 1, (0, 2): 1, (0, 3): 1},
+        {(2, 0): 1, (2, 1): 1, (1, 1): 1, (1, 2): 1, (1, 0): 1, (0, 0): 1},
+        {(2, 3): 1, (1, 3): 1, (1, 2): 1, (0, 2): 1, (1, 1): 1, (1, 0): 1},
+        {(0, 4): 1, (0, 3): 1, (0, 2): 1, (0, 1): 1, (1, 2): 1, (1, 1): 1},
+        {(0, 3): 1, (0, 2): 1, (1, 2): 1, (1, 1): 1, (1, 3): 1, (2, 3): 1},
+        {(0, 0): 1, (1, 0): 1, (1, 1): 1, (2, 1): 1, (1, 2): 1, (1, 3): 1}],
+        ]
+
+    pieces_orientations_per_piece = [1, 3, 6, 6, 6, 6, 6, 12, 12, 12, 12, 12]
 
 # we will work with all orientations as different pieces 
 index_per_piece_with_orientation = [ (i,j) for i in range(len(pieces_with_orientations)) for j in range(len(pieces_with_orientations[i])) ]
 assert len(index_per_piece_with_orientation) == 94, "There should be 94 pieces including different orientations."
-# print(index_per_piece_with_orientation)
 
-class FindAllSolutions():
-    def __init__(self,board, pieces_with_orientations, index_per_piece_with_orientation, logger=None):
-        # we will not do any flipping or rotating. So provide all wanted symmetries. 
-        self.logger = logger or logging.getLogger(__name__)
-        self.solver = triangular_puzzle_solver.PuzzleSolver(self.logger)
 
-        self.board = board
-        
-        self.logger.info("Init environment for fitting pieces in board.")
-    
-
-    
-
-    def try_extra_piece(self, board, sequence, pattern ):
-
-        for pieceIndex, orientation_
-
-        testboard = copy.deepcopy(board)  efwefaefawef  continue herer....
-        return self.solver.try_piece_on_board(testboard, pattern)
-
-def prepare_puzzle_pieces(base_pieces_patterns):
-    solver = triangular_puzzle_solver.PuzzleSolver()
-    # prepare puzzle pieces
-    pieces_with_orientations = solver.prepare_pieces(base_pieces_patterns)
-    # for patterns in prepared_patterns:
-    #     print(patterns)
-
-    pieces_orientations_per_piece = [len(p) for p in pieces_with_orientations]
-
-    return pieces_with_orientations, pieces_orientations_per_piece
 
 def prepare_base_boards_with_hexagon(hexagon, base_board):  
     solver = triangular_puzzle_solver.PuzzleSolver()
@@ -380,6 +356,20 @@ def prepare_base_boards_with_hexagon(hexagon, base_board):
 
     return starting_puzzle_boards
 
+starting_puzzle_boards = prepare_base_boards_with_hexagon( pieces_with_orientations[0][0], base_board)
+
+
+def prepare_puzzle_pieces(base_pieces_patterns):
+    solver = triangular_puzzle_solver.PuzzleSolver()
+    # prepare puzzle pieces
+    pieces_with_orientations = solver.prepare_pieces(base_pieces_patterns)
+    # for patterns in prepared_patterns:
+    #     print(patterns)
+
+    pieces_orientations_per_piece = [len(p) for p in pieces_with_orientations]
+
+    return pieces_with_orientations, pieces_orientations_per_piece
+
 def logger_setup():
     # logger setup 
     #logging.basicConfig(format='%(asctime)s - %(module)s (ln:%(lineno)d): %(message)s', level=logging.INFO)
@@ -396,7 +386,8 @@ def logger_setup():
     # logging.basicConfig(level=logging.INFO, format='%(asctime)s %(threadName)s %(message)s')
     # logger = logging.getLogger(__name__)
 
-    logging.basicConfig(level=logging.INFO, format='%(asctime)s %(threadName)s %(message)s')
+    # logging.basicConfig(level=logging.INFO, format='%(asctime)s %(threadName)s %(message)s')
+    logging.basicConfig(level=logging.INFO, format='%(levelname)s\t%(asctime)s\t:\t%(message)s\t(%(module)s/%(funcName)s/%(lineno)d)')
     # test_lode 
     logger = logging.getLogger("puzzle_haley")
     # logger.addHandler(test_lode)
@@ -406,7 +397,13 @@ def logger_setup():
 
 
 
-def test_sequences_from_database_loop(boards):
+def test_sequences_from_database_loop(boards, logger):
+
+
+    solver = triangular_puzzle_solver.PuzzleSolver(logger)
+    logger.info("start Haley puzzle solving.")
+    
+
     conn = solver_database.create_connection(r"D:\Temp\puzzle_haley\attempts_no_boards.db")
     sequences_count = 5
 
@@ -449,7 +446,7 @@ def try_random_sequences_for_all_boards(boards):
 
 def try_sequences_for_all_boards(boards, sequences_to_try=None):
     # if no sequence to try provide (list of pieces to try in right sequence), a random one will be generated.
-     
+    solver  = triangular_puzzle_solver.PuzzleSolver()
     tested_sequences = 0
     pieces_tested_count = 0
     for sequence_to_try in sequences_to_try:
@@ -461,7 +458,7 @@ def try_sequences_for_all_boards(boards, sequences_to_try=None):
 
         except triangular_puzzle_solver.WinningSolutionFoundException as e:
            
-            with open(r"D:\Temp\puzzle_haley\winners.txt","a") as f:
+            with open(r"D:\Temp\puzzle_haley\tmptmp.txt","a") as f:
                 f.write("{}\n".format(str(sequence_to_try)))
 
            
@@ -565,33 +562,103 @@ def test_manually(pieces_with_orientations):
 def solve_with_database(path_to_database):
     pass
 
+class FindAllSolutions():
+    def __init__(self,board, pieces_with_orientations, 
+        index_per_piece_with_orientation, logger=None):
+        # we will not do any flipping or rotating. So provide all wanted symmetries. 
+        self.board = board
+        self.pieces_with_orientations = pieces_with_orientations
+        self.index_per_piece_with_orientation = index_per_piece_with_orientation
+        self.logger = logger or logging.getLogger(__name__)
+        
+        self.solver = triangular_puzzle_solver.PuzzleSolver(self.logger)
+        self.logger.info("Init environment for fitting pieces in board.")
+    
+
+    def get_next_level_sequences(self, sequence):
+        valid_pieces = self.extend_sequence_with_all_possibilities(sequence)
+        next_sequences = [ sequence + [p] for p in valid_pieces]
+        return next_sequences
+
+    def extend_sequence_with_all_possibilities(self, sequence):
+        # sequence is a list of tuples (pieceindex, orientationindex)
+        
+        useboard = copy.deepcopy(self.board)
+        resultboard = self.solver.build_up_state(useboard, self.pieces_with_orientations, sequence)
+        sequence_board = copy.deepcopy(resultboard)
+        
+        used_pieces = [p for p,o in sequence]
+        pieces = [(p,o) for (p,o) in self.index_per_piece_with_orientation if p not in used_pieces]
+        
+        # logger.info("{} pieces to choose from. {}".format(len(pieces), pieces))
+        list_of_successful_pieces = self.try_pieces_on_a_board(sequence_board, pieces)
+        return list_of_successful_pieces
+
+    def try_pieces_on_a_board(self, board, pieces):
+        fitting_pieces = []
+        for piece_index, piece_orientation in pieces:
+            # logger.info(piece_index)
+            fits =  self.try_extra_piece(board, piece_index, piece_orientation)
+            if fits:
+                fitting_pieces.append((piece_index, piece_orientation))
+
+        return fitting_pieces
+
+    def try_extra_piece(self, board, piece_index, piece_orientation ):
+
+        pattern = self.pieces_with_orientations[piece_index][piece_orientation]
+        testboard = copy.deepcopy(board)  # efwefaefawef  continue herer....
+        
+        fits = self.solver.try_piece_on_board(testboard, pattern)
+        
+        return fits
+
+solutions_board_0 = [ (2, 3), (1, 2), (4, 5), (8, 11), (7, 9), (9, 2), (6, 2), (11, 6), (3, 4), (5, 2), (10, 6),  #  part of the database big search. 
+            [(2, 3), (3, 5), (11, 3), (6, 0), (1, 1), (4, 4), (7, 0), (5, 0), (10, 2), (9, 5), (8, 10)],  # 2020-05-09 after 67000 random sequences tries
+            [(8,6), (3,5 ), (6,0 ), (10,11 ), (4,5 ), (2,4 ), (7,9 ), (11,3 ), (1,0 ), (9,3 ), (5,0 )],  # 2020-05-25 245000 attempts  
+            [(2,3), (10,0 ), (11,3 ), (6,0 ), (8,5 ), (9,1 ), (5,0 ), (1,2 ), (7,2 ), (4,2 ), (3,3 )],  # 2020-05-25  322000 attempts 
+            [(7, 6), (2, 0), (3, 5), (11, 1), (8, 4), (1, 0), (10, 7), (6, 3), (4, 0), (9, 3), (5, 0)],  # 2020-05-26 535000 attempts
+            ]
 
 if __name__ == "__main__":
 
+    logger = logger_setup()
+    findall = FindAllSolutions(
+        starting_puzzle_boards[0],
+        pieces_with_orientations,
+        index_per_piece_with_orientation[1:],
+        logger
+        )
 
-    # test_manually(pieces_with_orientations)
-    # exit()
+    # next_level_pieces = findall.extend_sequence_with_all_possibilities([(2,3),(1,1),(3,2)])
+    seqs = [[]]
+    while True:
+        new_seqs = []
+        for seq in seqs:
+            # logger.info("check {}".format(seq))
+            new_seqs.extend(findall.get_next_level_sequences(seq))
+        logger.info(len(new_seqs))
+        seqs = new_seqs
+        logger.info("next level")
+
+        # for s in seqs:
+            
+        #     logger.info(s)
+    exit()
 
 
     # show_a_solution()
     # exit()
 
-    logger = logger_setup()
-    solver = triangular_puzzle_solver.PuzzleSolver(logger)
-    logger.info("start Haley puzzle solving.")
     
-    # only do if not hardcoded.
-    if GENERATE_PIECES:
-        pieces_with_orientations, pieces_orientations_per_piece = prepare_puzzle_pieces(base_pieces_patterns)
-    
-    starting_puzzle_boards = prepare_base_boards_with_hexagon( pieces_with_orientations[0][0], base_board)
     
 
 
     # try_sequences_for_all_boards(starting_puzzle_boards, sequences_to_try= [[7,2,3,11,8,1,10,6,4,9,5]])
-    test_sequences_from_database_loop(starting_puzzle_boards)
+    try_sequences_for_all_boards(starting_puzzle_boards, sequences_to_try= [[2,1,4,8,7,9,6,11,3,5,10]])
+
+    # test_sequences_from_database_loop(starting_puzzle_boards, logger)
     
-    # solve_with_database
    
 
     # board = starting_puzzle_boards[0]
