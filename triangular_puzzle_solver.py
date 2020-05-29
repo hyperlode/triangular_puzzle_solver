@@ -7,7 +7,8 @@ import triangular_pattern
 
 class WinningSolutionFoundException(Exception):
    
-    print("WE have a winnner.")
+    # print("WE have a winnner.")
+    pass
 
 
 class PuzzleSolver():
@@ -81,17 +82,17 @@ class PuzzleSolver():
         total_pieces_tested_count = 0
         total_longest_state = []
         total_longest_state_board_index = None
-        #self.logger.info("Start trying pieces sequence. (all orientations, top left to bottom right): {}".format(sequence_of_pieces_indeces_to_try))
+        self.logger.info("Start trying pieces sequence. (all orientations, top left to bottom right): {}".format(sequence_of_pieces_indeces_to_try))
         
         for board_index, board in enumerate(boards):
-            # self.logger.info("board index: {}".format(board_index))
+            self.logger.info("board index: {}".format(board_index))
             pieces_tested, longest_state = self.analyse_sequence_of_pieces(board, pieces_with_orientations, sequence_of_pieces_indeces_to_try)
             total_pieces_tested_count += pieces_tested
             if len(longest_state) > len(total_longest_state):
                 total_longest_state = longest_state
                 total_longest_state_board_index = board_index
         
-        #self.logger.info("Testing sequence endend. Pieces tested on all boards:{}. longest state length (on board{}): {}/{} ({})".format(total_pieces_tested_count, total_longest_state_board_index, len(longest_state), len(sequence_of_pieces_indeces_to_try), longest_state))
+        self.logger.info("Testing sequence endend. Pieces tested on all boards:{}. longest state length (on board{}): {}/{} ({})".format(total_pieces_tested_count, total_longest_state_board_index, len(longest_state), len(sequence_of_pieces_indeces_to_try), longest_state))
         return total_pieces_tested_count, total_longest_state, total_longest_state_board_index
 
     def analyse_randomize_sequence_of_pieces(self, board, pieces_with_orientations, pieces_indeces):

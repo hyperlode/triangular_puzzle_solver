@@ -192,6 +192,22 @@ def set_sequences_as_tested(conn, sequences, tested_value=1):
         result = execute_sql_return_rows(conn, sql_statement )
     commit(conn)
 
+# def get_incomplete_level(conn):
+
+def get_rows_by_level(conn, level, status, limit):
+    # result = execute_sql_return_rows(conn, " SELECT * from 'attempts' where is_tested != 1 and is_tested != 666 LIMIT {}".format(count))
+    # sequences = []
+    # if print_result:
+    #     print(result)
+    # id_of_first_row = result[0][0]
+    # for row in result:
+    #     sequences.append( [int(i) for i in row[1].split(",")])
+    
+    # set_sequences_as_tested(conn, sequences, tested_value=666)
+    
+    # return id_of_first_row, sequences
+    pass
+
 if __name__ == '__main__':
    # conn = create_connection(r"C:\temp\haley_puzzle\pythonsqlite.db")
     conn = create_connection(r"D:\Temp\puzzle_haley\attempts_no_boards.db")

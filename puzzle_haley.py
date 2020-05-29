@@ -323,6 +323,31 @@ pieces_with_orientations = [
 
 pieces_orientations_per_piece = [1, 3, 6, 6, 6, 6, 6, 12, 12, 12, 12, 12]
 
+# we will work with all orientations as different pieces 
+index_per_piece_with_orientation = [ (i,j) for i in range(len(pieces_with_orientations)) for j in range(len(pieces_with_orientations[i])) ]
+assert len(index_per_piece_with_orientation) == 94, "There should be 94 pieces including different orientations."
+# print(index_per_piece_with_orientation)
+
+class FindAllSolutions():
+    def __init__(self,board, pieces_with_orientations, index_per_piece_with_orientation, logger=None):
+        # we will not do any flipping or rotating. So provide all wanted symmetries. 
+        self.logger = logger or logging.getLogger(__name__)
+        self.solver = triangular_puzzle_solver.PuzzleSolver(self.logger)
+
+        self.board = board
+        
+        self.logger.info("Init environment for fitting pieces in board.")
+    
+
+    
+
+    def try_extra_piece(self, board, sequence, pattern ):
+
+        for pieceIndex, orientation_
+
+        testboard = copy.deepcopy(board)  efwefaefawef  continue herer....
+        return self.solver.try_piece_on_board(testboard, pattern)
+
 def prepare_puzzle_pieces(base_pieces_patterns):
     solver = triangular_puzzle_solver.PuzzleSolver()
     # prepare puzzle pieces
@@ -383,34 +408,57 @@ def logger_setup():
 
 def test_sequences_from_database_loop(boards):
     conn = solver_database.create_connection(r"D:\Temp\puzzle_haley\attempts_no_boards.db")
-    sequences_count = 500
+    sequences_count = 5
+
+    total_sequences_tested = 0
+    total_pieces_tested = 0
     while True:
         
         id_first_row, sequences = solver_database.get_untested_sequences(conn, sequences_count)
         logger.info("*****get new sequences from database. (rows taken:{}) id first row:{}".format(sequences_count, id_first_row))
+        
         # sequences.append([7,2,3,11,8,1,10,6,4,9,5])  # test to see if winners are detected.
+        sequences = [[7,2,3,11,8,1,10,6,4,9,5]] + sequences 
 
-        try_sequences_for_all_boards(boards, sequences)
+        for s in sequences:
+            print (s)
+        st, pt = try_sequences_for_all_boards(boards, sequences)
+        total_sequences_tested += st
+        total_pieces_tested += pt
+        logger.info('For now: Total tested sequences: {}, total pieces tested: {}'.format(total_sequences_tested, total_pieces_tested))
         solver_database.set_sequences_as_tested(conn, sequences)
+
+def try_random_sequences_for_all_boards(boards):
+    pieces_to_try_indeces =        [1,2,3,4,5,6,7,8,9,10,11]  # 0 is already placed on the board!\
+    # winning_sequence_for_testing = [7,2,3,11,8,1,10,6,4,9,5]  # 0 is already placed on the board!\
+    tested_sequences = 0
+    pieces_tested_count = 0
+    while True:
+        tested_sequences += 1
+        try:
+            pieces_tested, longest_state, board_index = solver.analyse_randomize_sequence_of_pieces_on_multiple_boards(boards, pieces_with_orientations, pieces_to_try_indeces)
+        
+        except triangular_puzzle_solver.WinningSolutionFoundException as e:
+           
+            with open(r"D:\Temp\puzzle_haley\winners.txt","a") as f:
+                f.write("{}\n".format(str(sequence_to_try)))
+
+        logger.info('Tested sequences: {}, total pieces tested: {}'.format(tested_sequences, pieces_tested_count))
+
+    return tested_sequences, pieces_tested_count
 
 def try_sequences_for_all_boards(boards, sequences_to_try=None):
     # if no sequence to try provide (list of pieces to try in right sequence), a random one will be generated.
-
-    if sequences_to_try is None:
-        pieces_to_try_indeces =        [1,2,3,4,5,6,7,8,9,10,11]  # 0 is already placed on the board!\
-        # winning_sequence_for_testing = [7,2,3,11,8,1,10,6,4,9,5]  # 0 is already placed on the board!\
-         
+     
     tested_sequences = 0
     pieces_tested_count = 0
     for sequence_to_try in sequences_to_try:
         tested_sequences += 1
         try:
-            if sequences_to_try is None:
-                pieces_tested, longest_state, board_index = solver.analyse_randomize_sequence_of_pieces_on_multiple_boards(boards, pieces_with_orientations, pieces_to_try_indeces)
-            else:
-                pieces_tested, longest_state, board_index = solver.analyse_sequence_of_pieces_on_multiple_boards(boards, pieces_with_orientations, sequence_to_try)
+            pieces_tested, longest_state, board_index = solver.analyse_sequence_of_pieces_on_multiple_boards(boards, pieces_with_orientations, sequence_to_try)
 
             pieces_tested_count += pieces_tested
+
         except triangular_puzzle_solver.WinningSolutionFoundException as e:
            
             with open(r"D:\Temp\puzzle_haley\winners.txt","a") as f:
@@ -422,6 +470,7 @@ def try_sequences_for_all_boards(boards, sequences_to_try=None):
             
 
         logger.info('Tested sequences: {}, total pieces tested: {}'.format(tested_sequences, pieces_tested_count))
+    return tested_sequences, pieces_tested_count
 
 def solve_by_random(board, ):
 
