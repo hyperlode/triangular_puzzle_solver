@@ -696,6 +696,7 @@ def print_sequence_on_board(board, sequence):
 if __name__ == "__main__":
 
     logger = logger_setup()
+    # database_path = r"C:\temp\haley_puzzle\Haley_puzzle_board_{}.db".format(0)
     database_path = r"C:\temp\haley_puzzle\Haley_puzzle_board_{}.db".format(0)
 
     # print_sequence_on_board(starting_puzzle_boards[0], [(2,3)])
