@@ -681,6 +681,13 @@ solutions_board_0 = [ (2, 3), (1, 2), (4, 5), (8, 11), (7, 9), (9, 2), (6, 2), (
 def print_sequence_on_board(board, sequence):
 
     solver = triangular_puzzle_solver.PuzzleSolver(logger)
+    if type(sequence) is str:
+        elements = sequence.split(",")
+        seq = []
+        for p,o in zip(elements[0::2], elements[1::2]):
+            seq.append((int(p),int(o)))
+        sequence = seq
+
     solver.build_up_state(board, pieces_with_orientations,sequence,True)
     
     # start with zero level
@@ -699,7 +706,8 @@ if __name__ == "__main__":
     database_path = r"C:\temp\haley_puzzle\Haley_puzzle_board_{}.db".format(0)
 
     # print_sequence_on_board(starting_puzzle_boards[0], [(2,3)])
-    # exit()
+    print_sequence_on_board(starting_puzzle_boards[0], "2,5,4,2,11,2,5,5,7,10,10,11")
+    exit()
 
     findall = FindAllSolutions(
         database_path,

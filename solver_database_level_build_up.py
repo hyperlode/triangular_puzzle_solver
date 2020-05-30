@@ -82,7 +82,7 @@ class HaleyPuzzleBuildUpDatabase():
 
 
         self.table_base_name = "sequences_level_{}"
-        for level in range(11):
+        for level in range(12):  # tabel 1 to and including 11
             self.create_table(self.table_base_name.format(level))
 
     def db_connect(self, db_path):
@@ -147,7 +147,7 @@ class HaleyPuzzleBuildUpDatabase():
     def get_sequences(self, desired_status, level, count, mark_as_in_progress=False):
         
         table_name = self.level_to_table_name(level)
-
+        
         with self.db.conn:
             sql = " SELECT * from '{}' where status = {} LIMIT {}".format(
                     table_name,
@@ -156,7 +156,6 @@ class HaleyPuzzleBuildUpDatabase():
                     )
 
             rows = self.db.execute_sql_return_rows(sql)
-
             sequences = []
             for row in rows:
                 sequence = self.str_to_sequence(row[1])
@@ -196,7 +195,8 @@ if __name__ == '__main__':
     
     db_path = r"C:\temp\haley_puzzle\Haley_puzzle_board_{}.db".format(0)
     solver_db = HaleyPuzzleBuildUpDatabase(db_path)
-    solver_db.add_sequence([(1,2),(3,4)], NOT_TESTED)
+    # solver_db.add_sequence([(2, 3), (3, 5), (11, 3), (6, 0), (1, 1), (4, 4), (7, 0), (5, 0), (10, 2), (9, 5)], NOT_TESTED)
     # solver_db.add_sequence([(1,2),(5,4)], TESTING_IN_PROGRESS)
     # solver_db.change_status([(1,2),(3,4)],666)
-    print(solver_db.get_sequences(NOT_TESTED,2,4))
+    print(solver_db.get_sequences(NOT_TESTED,10,4))
+    print(solver_db.db.get_all_records("sequences_level_10"))
