@@ -59,6 +59,7 @@ class DatabaseSqlite3Actions():
                     print("SQL success. after: {} retries".format(DATABASE_RETRIES - retry))
                 retry = 0
             except Exception as e:
+                print(sql)
                 # sqlite3.OperationalError
                 randomtime = random.randint(0,100)/10
                 time.sleep(randomtime)
@@ -66,7 +67,7 @@ class DatabaseSqlite3Actions():
                 print("database error: {}".format(e))
                 print("database error, retries: {}".format(retry))
         if verbose:
-            print(sql)
+            print("sql executed: {} (truncated to 100 chars)".format(sql[:100]))
         return cur
 
     def execute_sql_return_rows(self, sql):
@@ -97,7 +98,6 @@ class HaleyPuzzleBuildUpDatabase():
         self.db_path = db_path
         self.db_connect(self.db_path)
 
-
         self.table_base_name = "sequences_level_{}"
         for level in range(12):  # tabel 1 to and including 11
             self.create_table(self.table_base_name.format(level))
@@ -120,9 +120,34 @@ class HaleyPuzzleBuildUpDatabase():
         self.db.execute_sql(create_sequences_for_a_level_table)
         self.db.commit()
 
+    # def add_sequences(self, sequences, status, commit=True):
+    #     for seq in sequences:
+    #         self.add_sequence(seq, status, False)
+
+    #     if commit:
+    #         self.db.commit()
+    #         # print("commit")
+
     def add_sequences(self, sequences, status, commit=True):
-        for seq in sequences:
-            self.add_sequence(seq, status, False)
+        # all sequences are assumed to have the same lenght (aka for the same level)
+        if len(sequences) == 0:
+            return
+        
+        table_name = self.sequence_to_table_name(sequences[0])
+
+        rows_data = []
+        for sequence in sequences:
+            seqstr = self.sequence_to_str(sequence)
+            rows_data.append( "('{}','{}','{}')".format(seqstr, status,''))
+            
+        rowsdatastr = ",".join(rows_data)
+                
+        sql_base = ''' INSERT INTO {} (sequence, status, optional)
+                       VALUES {} ;'''.format(table_name, rowsdatastr)
+
+        sql = sql_base.format(table_name, )
+
+        self.db.execute_sql(sql)
 
         if commit:
             self.db.commit()
@@ -137,7 +162,7 @@ class HaleyPuzzleBuildUpDatabase():
         savestr = self.sequence_to_str(sequence)
 
         sql_base = ''' INSERT INTO {} (sequence, status, optional)
-                       VALUES('{}','{}','{}') '''
+                       VALUES('{}','{}','{}');'''
         sql = sql_base.format(table_name, savestr, status,'')
 
         self.db.execute_sql(sql)
@@ -145,13 +170,36 @@ class HaleyPuzzleBuildUpDatabase():
         if commit:
             self.db.commit()
       
-    def change_statuses(self, sequences, status, commit=True):
-        for sequence in sequences:
-            self.change_status(sequence, status, False)
+    # def change_statuses(self, sequences, status, commit=True):
+    #     for sequence in sequences:
+    #         self.change_status(sequence, status, False)
 
+    #     if commit:
+    #         self.db.commit()
+    
+    def change_statuses(self, sequences, status, commit=True):
+
+        if len(sequences) == 0:
+            return 
+
+        # all sequences should have the same length. So, 
+        table_name = self.sequence_to_table_name(sequences[0])
+
+        # table_name = self.level_to_table_name(level)
+
+        conditions= []
+        for sequence in sequences:
+            seqstr = self.sequence_to_str(sequence)
+            condition = "sequence = '{}'".format(seqstr)
+            conditions.append(condition)
+        
+        conditionsstr = " OR ".join(conditions)
+
+        sql = "UPDATE '{}' SET status = {} WHERE {}".format(table_name, status, conditionsstr)
+        self.db.execute_sql(sql)
         if commit:
             self.db.commit()
-            
+                    
     def change_status(self, sequence, status, commit=True):
         table_name = self.sequence_to_table_name(sequence)
         seqstr = self.sequence_to_str(sequence)
@@ -176,14 +224,10 @@ class HaleyPuzzleBuildUpDatabase():
             sequences = []
             for row in rows:
                 sequence = self.str_to_sequence(row[1])
-
-                if mark_as_in_progress:
-                    self.change_status(sequence, TESTING_IN_PROGRESS, False)
-
                 sequences.append(sequence)
-            
+
             if mark_as_in_progress:
-                self.db.commit()  # commit status changes.
+                self.change_statuses(sequences, TESTING_IN_PROGRESS, True)
 
             return sequences
 
