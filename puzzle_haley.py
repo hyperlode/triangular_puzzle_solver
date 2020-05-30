@@ -592,16 +592,25 @@ class FindAllSolutions():
 
         self.level = 1  # at each program start, we start from the first level to check where to start adding.
 
+
         while True:
             # retrieve sequences to build upon. And check if we're looking on the right level.
+            
             continue_level_search = True
+            timings = []
+
+
+            start_time = time.time()
+                
             while continue_level_search:
+                
+                
                 base_sequences = self.solver_db.get_sequences(solver_database_level_build_up.NOT_TESTED, 
                     level,
                     NUMBER_OF_BASE_SEQUENCES_TO_RETRIEVE_PER_CALL,
                     True,
                     )
-            
+                
                 if len(base_sequences) == 0:
                     
                     level += 1
@@ -609,18 +618,34 @@ class FindAllSolutions():
                 else:
                     continue_level_search = False
 
+            timings.append(round(time.time() - start_time, 2))
+            start_time = time.time()
+            
             # valid sequences found. time to add to it.
             next_level_results = []
             for base_sequence in base_sequences:
                 next_level_results.extend( self.get_next_level_sequences(base_sequence))
             
+            timings.append(round(time.time() - start_time, 2))
+            start_time = time.time()
+            
+           
             # write away new pieces.
             # print(next_level_results)
+
             self.solver_db.add_sequences(next_level_results,solver_database_level_build_up.NOT_TESTED)
+
+            timings.append(round(time.time() - start_time, 2))
+            start_time = time.time()
+            
 
             # mark base sequences as done.
             self.solver_db.change_statuses(base_sequences,solver_database_level_build_up.TESTED, True)
-            self.logger.info("average additions per base: {}".format( len(next_level_results) / len(base_sequences)))
+
+            timings.append(round(time.time() - start_time, 2))
+            
+            average_additions_per_base = len(next_level_results) / len(base_sequences)
+            self.logger.info("average additions per base: {}. \ntimings (retrievefromdb, analyse, addtodb, markasdontodb): {}".format( average_additions_per_base , timings ))
            
         # sequence = self.solver_db.get_sequences(solver_database_level_build_up.NOT_TESTED, level,1)
     

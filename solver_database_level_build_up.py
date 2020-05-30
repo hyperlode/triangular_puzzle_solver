@@ -61,7 +61,7 @@ class DatabaseSqlite3Actions():
             except Exception as e:
                 print(sql)
                 # sqlite3.OperationalError
-                randomtime = random.randint(0,100)/10
+                randomtime = random.randint(0,100)/100
                 time.sleep(randomtime)
                 retry -= 1
                 print("database error: {}".format(e))
