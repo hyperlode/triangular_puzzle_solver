@@ -87,6 +87,10 @@ class HaleyPuzzleBuildUpDatabase():
 
     def db_connect(self, db_path):
         self.db = DatabaseSqlite3Actions( db_path)
+    
+    def row_count(self,level):
+        table_name = self.level_to_table_name(level)
+        return self.db.get_row_count(table_name)
         
     def create_table(self, table_name):
         
@@ -99,7 +103,15 @@ class HaleyPuzzleBuildUpDatabase():
         self.db.execute_sql(create_sequences_for_a_level_table)
         self.db.commit()
 
-    def add_sequence(self, sequence, status):
+    def add_sequences(self, sequences, status, commit=True):
+        for seq in sequences:
+            self.add_sequence(seq, status, False)
+
+        if commit:
+            self.db.commit()
+            # print("commit")
+        
+    def add_sequence(self, sequence, status, commit=True):
         # sequence is an array of tuples. with (piece_id, piece_orientation)
 
         # convert to string of list of ints.
@@ -112,27 +124,52 @@ class HaleyPuzzleBuildUpDatabase():
         sql = sql_base.format(table_name, savestr, status,'')
 
         self.db.execute_sql(sql)
-        self.db.commit()
+
+        if commit:
+            self.db.commit()
       
-    def change_status(self, sequence, status):
+    def change_statuses(self, sequences, status, commit=True):
+        for sequence in sequences:
+            self.change_status(sequence, status, False)
+
+        if commit:
+            self.db.commit()
+            
+    def change_status(self, sequence, status, commit=True):
         table_name = self.sequence_to_table_name(sequence)
         seqstr = self.sequence_to_str(sequence)
 
         sql = "UPDATE '{}' SET status = {} WHERE sequence = '{}'".format(table_name, status, seqstr)
         self.db.execute_sql(sql)
-        self.db.commit()
+        if commit:
+            self.db.commit()
            
-    def get_sequence(self, desired_status, level, count):
+    def get_sequences(self, desired_status, level, count, mark_as_in_progress=False):
         
         table_name = self.level_to_table_name(level)
 
-        sql = " SELECT * from '{}' where status = {} LIMIT {}".format(
-                table_name,
-                desired_status,
-                count,
-                )
-        rows = self.db.execute_sql_return_rows(sql)
-        return rows
+        with self.db.conn:
+            sql = " SELECT * from '{}' where status = {} LIMIT {}".format(
+                    table_name,
+                    desired_status,
+                    count,
+                    )
+
+            rows = self.db.execute_sql_return_rows(sql)
+
+            sequences = []
+            for row in rows:
+                sequence = self.str_to_sequence(row[1])
+
+                if mark_as_in_progress:
+                    self.change_status(sequence, TESTING_IN_PROGRESS, False)
+
+                sequences.append(sequence)
+            
+            if mark_as_in_progress:
+                self.db.commit()  # commit status changes.
+
+            return sequences
 
     def sequence_to_table_name(self, sequence):
         level= len(sequence)
@@ -152,13 +189,14 @@ class HaleyPuzzleBuildUpDatabase():
         elements = seqstr.split(",")
         seq = []
         for p,o in zip(elements[0::2], elements[1::2]):
-            seq.append((p,o))
+            seq.append((int(p),int(o)))
         return seq
 
 if __name__ == '__main__':
     
     db_path = r"C:\temp\haley_puzzle\Haley_puzzle_board_{}.db".format(0)
     solver_db = HaleyPuzzleBuildUpDatabase(db_path)
-    # solver_db.add_sequence([(1,2),(3,4)], TESTING_IN_PROGRESS)
+    solver_db.add_sequence([(1,2),(3,4)], NOT_TESTED)
+    # solver_db.add_sequence([(1,2),(5,4)], TESTING_IN_PROGRESS)
     # solver_db.change_status([(1,2),(3,4)],666)
-    # print(solver_db.get_sequence(6677,2,4))
+    print(solver_db.get_sequences(NOT_TESTED,2,4))

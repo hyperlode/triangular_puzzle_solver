@@ -9,6 +9,7 @@ import triangular_grid
 import triangular_pattern
 
 import solver_database
+import solver_database_level_build_up
 
 
 
@@ -563,9 +564,10 @@ def solve_with_database(path_to_database):
     pass
 
 class FindAllSolutions():
-    def __init__(self,board, pieces_with_orientations, 
+    def __init__(self, database_path, board, pieces_with_orientations, 
         index_per_piece_with_orientation, logger=None):
-        # we will not do any flipping or rotating. So provide all wanted symmetries. 
+        # we will not do any flipping or rotating. So provide all wanted symmetries.
+        # index_per_piece_with_orientation --> used pieces index with orientation .(list of tuples) 
         self.board = board
         self.pieces_with_orientations = pieces_with_orientations
         self.index_per_piece_with_orientation = index_per_piece_with_orientation
@@ -573,7 +575,63 @@ class FindAllSolutions():
         
         self.solver = triangular_puzzle_solver.PuzzleSolver(self.logger)
         self.logger.info("Init environment for fitting pieces in board.")
+        self.solver_db = solver_database_level_build_up.HaleyPuzzleBuildUpDatabase(database_path)
+
+        
+    def initiate_search(self, level=1):
+        # assume level is zero for now.
+        # determine level.
+
+        # check for "started"
+
+        NUMBER_OF_BASE_SEQUENCES_TO_RETRIEVE_PER_CALL = 100
+
+        # when database is empty, we can't do anthing yet. so, build first level manually.
+        self.check_and_build_first_level()
+        
+
+        self.level = 1  # at each program start, we start from the first level to check where to start adding.
+
+        while True:
+            # retrieve sequences to build upon. And check if we're looking on the right level.
+            continue_level_search = True
+            while continue_level_search:
+                base_sequences = self.solver_db.get_sequences(solver_database_level_build_up.NOT_TESTED, 
+                    level,
+                    NUMBER_OF_BASE_SEQUENCES_TO_RETRIEVE_PER_CALL,
+                    True,
+                    )
+            
+                if len(base_sequences) == 0:
+                    
+                    level += 1
+                    self.logger.info("level increased. Now adding to level {}".format(level))
+                else:
+                    continue_level_search = False
+
+            # valid sequences found. time to add to it.
+            next_level_results = []
+            for base_sequence in base_sequences:
+                next_level_results.extend( self.get_next_level_sequences(base_sequence))
+            
+            # write away new pieces.
+            # print(next_level_results)
+            self.solver_db.add_sequences(next_level_results,solver_database_level_build_up.NOT_TESTED)
+
+            # mark base sequences as done.
+            self.solver_db.change_statuses(base_sequences,solver_database_level_build_up.TESTED, True)
+            self.logger.info("average additions per base: {}".format( len(next_level_results) / len(base_sequences)))
+           
+        # sequence = self.solver_db.get_sequences(solver_database_level_build_up.NOT_TESTED, level,1)
     
+    def check_and_build_first_level(self):
+        # if no one pieces sequences yet in table, we have to start from scratch.
+        rows = self.solver_db.row_count(1)
+        if rows == 0:
+            print("not yet started.")
+            sequences = self.get_next_level_sequences([])
+            self.solver_db.add_sequences(sequences, solver_database_level_build_up.NOT_TESTED)
+        
 
     def get_next_level_sequences(self, sequence):
         valid_pieces = self.extend_sequence_with_all_possibilities(sequence)
@@ -620,16 +678,41 @@ solutions_board_0 = [ (2, 3), (1, 2), (4, 5), (8, 11), (7, 9), (9, 2), (6, 2), (
             [(7, 6), (2, 0), (3, 5), (11, 1), (8, 4), (1, 0), (10, 7), (6, 3), (4, 0), (9, 3), (5, 0)],  # 2020-05-26 535000 attempts
             ]
 
+def print_sequence_on_board(board, sequence):
+
+    solver = triangular_puzzle_solver.PuzzleSolver(logger)
+    solver.build_up_state(board, pieces_with_orientations,sequence,True)
+    
+    # start with zero level
+    # try to pick up from database.
+    # if nothing, advance a level
+
+    # when sequence found
+    # search alll next levels
+    # post them to the database
+    # repeat.
+
+
 if __name__ == "__main__":
 
     logger = logger_setup()
+    database_path = r"C:\temp\haley_puzzle\Haley_puzzle_board_{}.db".format(0)
+
+    # print_sequence_on_board(starting_puzzle_boards[0], [(2,3)])
+    # exit()
+
     findall = FindAllSolutions(
+        database_path,
         starting_puzzle_boards[0],
         pieces_with_orientations,
         index_per_piece_with_orientation[1:],
         logger
         )
+    findall.initiate_search()
 
+    exit()
+    # solve_board_0_by_level_build_up( db_path, starting_puzzle_boards[0], pieces_with_orientations, index_per_piece_with_orientation[1:], logger)
+    
     # next_level_pieces = findall.extend_sequence_with_all_possibilities([(2,3),(1,1),(3,2)])
     seqs = [[]]
     while True:
