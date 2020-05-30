@@ -2,7 +2,8 @@ import sqlite3
 from sqlite3 import Error
 
 import haley_puzzle_create_multithreading_task as haley_puzzle_attempts
-
+import random
+import time
 
 '''
 https://www.sqlitetutorial.net/sqlite-python/creating-database/
@@ -45,17 +46,33 @@ class DatabaseSqlite3Actions():
     def get_cursor(self):
         return self.conn.cursor()
 
-    def execute_sql(self, sql):
-        cur = self.get_cursor()
-        cur.execute(sql)
+    def execute_sql(self, sql, verbose=False):
+        DATABASE_RETRIES = 100
+        retry = DATABASE_RETRIES
+
+        while retry > 0:
+
+            try:
+                cur = self.get_cursor()
+                cur.execute(sql)
+                if retry  != DATABASE_RETRIES:
+                    print("SQL success. after: {} retries".format(DATABASE_RETRIES - retry))
+                retry = 0
+            except Exception as e:
+                # sqlite3.OperationalError
+                randomtime = random.randint(0,100)/10
+                time.sleep(randomtime)
+                retry -= 1
+                print("database error: {}".format(e))
+                print("database error, retries: {}".format(retry))
+        if verbose:
+            print(sql)
         return cur
 
     def execute_sql_return_rows(self, sql):
-        cur = self.get_cursor()
-        cur.execute(sql)
+        cur = self.execute_sql(sql)
         data = cur.fetchall()
         return data
-
 
     def commit(self):
         self.conn.commit()
