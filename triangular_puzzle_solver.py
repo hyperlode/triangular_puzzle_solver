@@ -53,6 +53,7 @@ class PuzzleSolver():
                
             if show_every_step:
                 self.logger.info("\n {}".format(str(board)))
+                input("next..")
                 
         return board
 

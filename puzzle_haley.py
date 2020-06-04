@@ -578,38 +578,36 @@ class FindAllSolutions():
         self.solver_db = solver_database_level_build_up.HaleyPuzzleBuildUpDatabase(database_path)
 
         
-    def initiate_search(self, level=1):
-        # assume level is zero for now.
-        # determine level.
-
-        # check for "started"
-
-        NUMBER_OF_BASE_SEQUENCES_TO_RETRIEVE_PER_CALL = 100
-
-        # when database is empty, we can't do anthing yet. so, build first level manually.
+    def initiate_search(self, number_of_sequences_per_database_call=100, reprocess=False):
+       
+        # when database is empty, we can't do anthing yet. so, build first level manually if needed.
         self.check_and_build_first_level()
         
+        level = 1  # at each program start, we start from the first level to check where to start adding.
 
-        self.level = 1  # at each program start, we start from the first level to check where to start adding.
-
-
-        while True:
+        while level < 12:
             # retrieve sequences to build upon. And check if we're looking on the right level.
             
             continue_level_search = True
             timings = []
 
-
             start_time = time.time()
                 
             while continue_level_search:
                 
-                
                 base_sequences = self.solver_db.get_sequences(solver_database_level_build_up.NOT_TESTED, 
                     level,
-                    NUMBER_OF_BASE_SEQUENCES_TO_RETRIEVE_PER_CALL,
+                    number_of_sequences_per_database_call,
                     True,
                     )
+
+                if len(base_sequences) == 0 and reprocess:
+                    sequences_to_reprocess = self.solver_db.get_sequences(solver_database_level_build_up.TESTING_IN_PROGRESS, 
+                    level,
+                    number_of_sequences_per_database_call,
+                    True,
+                    )
+                    base_sequences.extend(sequences_to_reprocess)
                 
                 if len(base_sequences) == 0:
                     
@@ -621,7 +619,7 @@ class FindAllSolutions():
             timings.append(round(time.time() - start_time, 2))
             start_time = time.time()
             
-            # valid sequences found. time to add to it.
+            # valid sequences found. Find all legal sequences on board with an added piece.
             next_level_results = []
             for base_sequence in base_sequences:
                 next_level_results.extend( self.get_next_level_sequences(base_sequence))
@@ -629,25 +627,20 @@ class FindAllSolutions():
             timings.append(round(time.time() - start_time, 2))
             start_time = time.time()
             
-           
             # write away new pieces.
-            # print(next_level_results)
-
             self.solver_db.add_sequences(next_level_results,solver_database_level_build_up.NOT_TESTED)
 
             timings.append(round(time.time() - start_time, 2))
             start_time = time.time()
-            
 
             # mark base sequences as done.
             self.solver_db.change_statuses(base_sequences,solver_database_level_build_up.TESTED, True)
 
             timings.append(round(time.time() - start_time, 2))
-            
+
+            # aftermath
             average_additions_per_base = len(next_level_results) / len(base_sequences)
             self.logger.info("average additions per base: {}. \ntimings (retrievefromdb, analyse, addtodb, markasdontodb): {}".format( average_additions_per_base , timings ))
-           
-        # sequence = self.solver_db.get_sequences(solver_database_level_build_up.NOT_TESTED, level,1)
     
     def check_and_build_first_level(self):
         # if no one pieces sequences yet in table, we have to start from scratch.
@@ -656,7 +649,6 @@ class FindAllSolutions():
             print("not yet started.")
             sequences = self.get_next_level_sequences([])
             self.solver_db.add_sequences(sequences, solver_database_level_build_up.NOT_TESTED)
-        
 
     def get_next_level_sequences(self, sequence):
         valid_pieces = self.extend_sequence_with_all_possibilities(sequence)
@@ -696,12 +688,133 @@ class FindAllSolutions():
         
         return fits
 
-solutions_board_0 = [ (2, 3), (1, 2), (4, 5), (8, 11), (7, 9), (9, 2), (6, 2), (11, 6), (3, 4), (5, 2), (10, 6),  #  part of the database big search. 
-            [(2, 3), (3, 5), (11, 3), (6, 0), (1, 1), (4, 4), (7, 0), (5, 0), (10, 2), (9, 5), (8, 10)],  # 2020-05-09 after 67000 random sequences tries
-            [(8,6), (3,5 ), (6,0 ), (10,11 ), (4,5 ), (2,4 ), (7,9 ), (11,3 ), (1,0 ), (9,3 ), (5,0 )],  # 2020-05-25 245000 attempts  
-            [(2,3), (10,0 ), (11,3 ), (6,0 ), (8,5 ), (9,1 ), (5,0 ), (1,2 ), (7,2 ), (4,2 ), (3,3 )],  # 2020-05-25  322000 attempts 
-            [(7, 6), (2, 0), (3, 5), (11, 1), (8, 4), (1, 0), (10, 7), (6, 3), (4, 0), (9, 3), (5, 0)],  # 2020-05-26 535000 attempts
-            ]
+# solutions_board_0 = [ (2, 3), (1, 2), (4, 5), (8, 11), (7, 9), (9, 2), (6, 2), (11, 6), (3, 4), (5, 2), (10, 6),  #  part of the database big search. 
+#             [(2, 3), (3, 5), (11, 3), (6, 0), (1, 1), (4, 4), (7, 0), (5, 0), (10, 2), (9, 5), (8, 10)],  # 2020-05-09 after 67000 random sequences tries
+#             [(8,6), (3,5 ), (6,0 ), (10,11 ), (4,5 ), (2,4 ), (7,9 ), (11,3 ), (1,0 ), (9,3 ), (5,0 )],  # 2020-05-25 245000 attempts  
+#             [(2,3), (10,0 ), (11,3 ), (6,0 ), (8,5 ), (9,1 ), (5,0 ), (1,2 ), (7,2 ), (4,2 ), (3,3 )],  # 2020-05-25  322000 attempts 
+#             [(7, 6), (2, 0), (3, 5), (11, 1), (8, 4), (1, 0), (10, 7), (6, 3), (4, 0), (9, 3), (5, 0)],  # 2020-05-26 535000 attempts
+#             ]
+
+solutions_board_3 = [[(4, 0), (10, 11), (3, 4), (1, 0), (9, 5), (5, 5), (7, 0), (2, 3), (6, 5), (11, 2), (8, 6)]]
+
+solutions_board_0 = [[(2, 3), (1, 1), (8, 10), (6, 0), (5, 1), (11, 10), (3, 3), (10, 1), (4, 2), (7, 2), (9, 4)],
+    [(2, 3), (1, 1), (11, 3), (6, 0), (5, 1), (3, 3), (8, 3), (10, 1), (4, 2), (7, 2), (9, 4)],
+    [(2, 3), (1, 1), (8, 10), (6, 1), (9, 3), (5, 1), (3, 1), (11, 8), (4, 1), (10, 4), (7, 8)],
+    [(2, 3), (1, 2), (4, 5), (8, 11), (7, 9), (9, 2), (6, 2), (11, 6), (3, 4), (5, 2), (10, 6)],
+    [(2, 3), (1, 2), (11, 5), (3, 4), (4, 1), (9, 5), (5, 5), (7, 1), (10, 2), (8, 5), (6, 4)],
+    [(2, 3), (3, 5), (8, 10), (6, 0), (1, 1), (9, 10), (4, 4), (11, 8), (10, 2), (5, 2), (7, 7)],
+    [(2, 3), (3, 5), (8, 10), (9, 7), (5, 2), (4, 5), (11, 6), (1, 2), (10, 5), (6, 5), (7, 8)],
+    [(2, 3), (3, 5), (8, 10), (9, 7), (5, 2), (10, 8), (4, 4), (11, 6), (1, 2), (6, 5), (7, 8)],
+    [(2, 3), (3, 5), (8, 10), (9, 1), (1, 1), (6, 4), (4, 4), (11, 8), (10, 2), (5, 2), (7, 7)],
+    [(2, 3), (3, 5), (10, 8), (7, 10), (11, 3), (9, 2), (4, 4), (6, 4), (1, 0), (5, 2), (8, 6)],
+    [(2, 3), (3, 5), (11, 3), (6, 0), (1, 1), (4, 4), (5, 0), (8, 4), (10, 3), (9, 0), (7, 1)],
+    [(2, 3), (3, 5), (11, 3), (6, 0), (1, 1), (4, 4), (7, 0), (5, 0), (8, 9), (10, 9), (9, 3)],
+    [(2, 3), (3, 5), (11, 3), (6, 0), (1, 1), (4, 4), (7, 0), (5, 0), (10, 2), (9, 5), (8, 10)],
+    [(2, 3), (3, 5), (11, 3), (6, 0), (1, 1), (4, 4), (7, 0), (5, 0), (10, 2), (9, 6), (8, 1)],
+    [(2, 3), (3, 5), (11, 3), (6, 0), (1, 1), (4, 4), (7, 0), (8, 3), (5, 2), (9, 5), (10, 4)],
+    [(2, 3), (3, 5), (11, 3), (6, 0), (1, 1), (4, 4), (7, 6), (8, 3), (5, 2), (10, 5), (9, 11)],
+    [(2, 3), (3, 5), (11, 3), (6, 0), (1, 1), (4, 4), (7, 6), (8, 3), (5, 3), (10, 9), (9, 3)],
+    [(2, 3), (3, 5), (11, 3), (6, 0), (1, 1), (4, 4), (8, 0), (5, 3), (7, 9), (10, 9), (9, 3)],
+    [(2, 3), (3, 5), (11, 3), (6, 0), (1, 1), (4, 4), (8, 6), (7, 3), (5, 0), (10, 9), (9, 3)],
+    [(2, 3), (10, 0), (11, 3), (6, 0), (5, 0), (7, 0), (8, 3), (1, 0), (3, 4), (9, 5), (4, 3)],
+    [(2, 3), (10, 0), (11, 3), (6, 0), (8, 5), (9, 1), (5, 0), (1, 2), (7, 2), (4, 2), (3, 3)],
+    [(2, 3), (10, 4), (8, 10), (6, 0), (7, 9), (9, 10), (11, 8), (5, 1), (1, 0), (3, 4), (4, 3)],
+    [(2, 3), (10, 4), (8, 10), (9, 1), (7, 9), (6, 4), (11, 8), (5, 1), (1, 0), (3, 4), (4, 3)],
+    [(2, 5), (7, 3), (3, 5), (1, 2), (4, 5), (11, 1), (6, 4), (10, 3), (8, 11), (5, 4), (9, 4)],
+    [(2, 5), (7, 3), (3, 5), (1, 2), (4, 5), (9, 2), (10, 8), (6, 0), (11, 10), (5, 2), (8, 6)],
+    [(3, 5), (4, 2), (2, 0), (11, 4), (9, 2), (7, 8), (1, 0), (6, 5), (5, 2), (10, 5), (8, 0)],
+    [(4, 1), (6, 2), (1, 2), (2, 2), (9, 5), (11, 10), (5, 5), (3, 5), (8, 2), (10, 2), (7, 7)],
+    [(8, 6), (11, 11), (3, 0), (4, 2), (7, 7), (2, 2), (1, 2), (10, 1), (6, 4), (5, 4), (9, 4)],
+    [(8, 6), (11, 11), (5, 4), (1, 1), (4, 2), (6, 1), (10, 1), (3, 3), (7, 5), (2, 1), (9, 4)],
+    [(8, 8), (6, 2), (2, 0), (11, 5), (5, 1), (10, 0), (9, 6), (1, 2), (4, 2), (7, 8), (3, 3)],
+    [(8, 8), (6, 2), (3, 5), (2, 2), (4, 5), (11, 1), (10, 9), (7, 8), (1, 0), (9, 3), (5, 0)],
+    [(9, 1), (6, 1), (1, 2), (5, 1), (7, 9), (10, 4), (4, 1), (2, 5), (3, 4), (8, 5), (11, 1)],
+    [(9, 1), (6, 1), (3, 5), (5, 1), (11, 3), (10, 4), (7, 2), (4, 4), (1, 0), (2, 5), (8, 6)],
+    [(9, 1), (10, 4), (2, 0), (5, 1), (11, 4), (4, 3), (6, 3), (8, 1), (1, 0), (7, 2), (3, 3)],
+    [(11, 7), (4, 2), (1, 2), (3, 5), (9, 5), (2, 0), (5, 5), (8, 0), (6, 1), (10, 2), (7, 8)],
+    [(11, 0), (10, 2), (2, 0), (8, 10), (5, 1), (6, 3), (9, 6), (1, 2), (4, 2), (7, 8), (3, 3)],
+    
+    [(7, 6), (2, 0), (3, 5), (1, 1), (8, 7), (11, 10), (9, 10), (4, 4), (10, 2), (5, 2), (6, 4)],
+    [(7, 6), (2, 0), (3, 5), (1, 1), (4, 3), (6, 3), (10, 7), (11, 6), (8, 9), (9, 3), (5, 0)],
+    [(7, 6), (2, 0), (3, 5), (10, 0), (4, 3), (6, 3), (11, 6), (8, 9), (1, 0), (9, 3), (5, 0)],
+    [(7, 6), (2, 0), (3, 5), (11, 1), (8, 4), (1, 0), (10, 7), (6, 3), (4, 0), (9, 3), (5, 0)],
+    [(7, 6), (2, 1), (3, 5), (10, 11), (4, 5), (6, 3), (8, 9), (11, 3), (1, 0), (9, 3), (5, 0)],
+    [(7, 11), (5, 2), (2, 0), (6, 1), (8, 9), (11, 5), (9, 11), (1, 0), (3, 4), (10, 1), (4, 3)],
+    [(8, 3), (1, 2), (6, 2), (11, 2), (7, 9), (9, 2), (2, 5), (4, 5), (3, 4), (5, 2), (10, 6)],
+    [(8, 3), (3, 5), (11, 9), (10, 11), (4, 5), (6, 3), (7, 0), (2, 0), (1, 0), (9, 3), (5, 0)],
+    [(8, 6), (2, 0), (4, 3), (6, 1), (5, 1), (11, 6), (10, 10), (3, 5), (1, 2), (9, 4), (7, 1)],
+    [(8, 6), (3, 5), (5, 1), (2, 2), (10, 5), (11, 7), (4, 4), (9, 9), (1, 2), (6, 5), (7, 8)],
+    [(8, 6), (3, 5), (5, 4), (6, 0), (1, 1), (9, 10), (4, 4), (11, 8), (2, 4), (10, 2), (7, 1)],
+    [(8, 6), (3, 5), (5, 4), (7, 7), (1, 0), (11, 7), (4, 4), (2, 0), (6, 3), (10, 9), (9, 3)],
+    [(8, 6), (3, 5), (5, 4), (9, 1), (1, 1), (6, 4), (4, 4), (11, 8), (2, 4), (10, 2), (7, 1)],
+    [(8, 6), (3, 5), (6, 0), (10, 11), (4, 5), (2, 4), (7, 9), (11, 3), (1, 0), (9, 3), (5, 0)],
+    [(8, 6), (3, 5), (7, 10), (1, 0), (11, 7), (2, 4), (10, 7), (4, 0), (6, 3), (9, 3), (5, 0)],
+    [(8, 6), (3, 5), (10, 4), (6, 2), (4, 5), (2, 2), (11, 6), (7, 0), (1, 0), (9, 3), (5, 0)],
+    [(7, 5), (6, 5), (2, 0), (8, 9), (9, 4), (11, 9), (1, 2), (5, 2), (10, 5), (4, 2), (3, 3)],
+    [(7, 5), (6, 5), (2, 0), (8, 9), (9, 4), (11, 9), (5, 1), (1, 0), (3, 4), (10, 3), (4, 3)],
+]
+
+
+solutions_board_0_strings = ["2,3,1,1,8,10,6,0,5,1,11,10,3,3,10,1,4,2,7,2,9,4",
+                            "2,3,1,1,11,3,6,0,5,1,3,3,8,3,10,1,4,2,7,2,9,4",
+                            "2,3,1,1,8,10,6,1,9,3,5,1,3,1,11,8,4,1,10,4,7,8",
+                            "2,3,1,2,4,5,8,11,7,9,9,2,6,2,11,6,3,4,5,2,10,6",
+                            "2,3,1,2,11,5,3,4,4,1,9,5,5,5,7,1,10,2,8,5,6,4",
+                            "2,3,3,5,8,10,6,0,1,1,9,10,4,4,11,8,10,2,5,2,7,7",
+                            "2,3,3,5,8,10,9,7,5,2,4,5,11,6,1,2,10,5,6,5,7,8",
+                            "2,3,3,5,8,10,9,7,5,2,10,8,4,4,11,6,1,2,6,5,7,8",
+                            "2,3,3,5,8,10,9,1,1,1,6,4,4,4,11,8,10,2,5,2,7,7",
+                            "2,3,3,5,10,8,7,10,11,3,9,2,4,4,6,4,1,0,5,2,8,6",
+                            "2,3,3,5,11,3,6,0,1,1,4,4,5,0,8,4,10,3,9,0,7,1",
+                            "2,3,3,5,11,3,6,0,1,1,4,4,7,0,5,0,8,9,10,9,9,3",
+                            "2,3,3,5,11,3,6,0,1,1,4,4,7,0,5,0,10,2,9,5,8,10",
+                            "2,3,3,5,11,3,6,0,1,1,4,4,7,0,5,0,10,2,9,6,8,1",
+                            "2,3,3,5,11,3,6,0,1,1,4,4,7,0,8,3,5,2,9,5,10,4",
+                            "2,3,3,5,11,3,6,0,1,1,4,4,7,6,8,3,5,2,10,5,9,11",
+                            "2,3,3,5,11,3,6,0,1,1,4,4,7,6,8,3,5,3,10,9,9,3",
+                            "2,3,3,5,11,3,6,0,1,1,4,4,8,0,5,3,7,9,10,9,9,3",
+                            "2,3,3,5,11,3,6,0,1,1,4,4,8,6,7,3,5,0,10,9,9,3",
+                            "2,3,10,0,11,3,6,0,5,0,7,0,8,3,1,0,3,4,9,5,4,3",
+                            "2,3,10,0,11,3,6,0,8,5,9,1,5,0,1,2,7,2,4,2,3,3",
+                            "2,3,10,4,8,10,6,0,7,9,9,10,11,8,5,1,1,0,3,4,4,3",
+                            "2,3,10,4,8,10,9,1,7,9,6,4,11,8,5,1,1,0,3,4,4,3",
+                            "2,5,7,3,3,5,1,2,4,5,11,1,6,4,10,3,8,11,5,4,9,4",
+                            "2,5,7,3,3,5,1,2,4,5,9,2,10,8,6,0,11,10,5,2,8,6",
+                            "3,5,4,2,2,0,11,4,9,2,7,8,1,0,6,5,5,2,10,5,8,0",
+                            "4,1,6,2,1,2,2,2,9,5,11,10,5,5,3,5,8,2,10,2,7,7",
+                            "8,6,11,11,3,0,4,2,7,7,2,2,1,2,10,1,6,4,5,4,9,4",
+                            "8,6,11,11,5,4,1,1,4,2,6,1,10,1,3,3,7,5,2,1,9,4",
+                            "8,8,6,2,2,0,11,5,5,1,10,0,9,6,1,2,4,2,7,8,3,3",
+                            "8,8,6,2,3,5,2,2,4,5,11,1,10,9,7,8,1,0,9,3,5,0",
+                            "9,1,6,1,1,2,5,1,7,9,10,4,4,1,2,5,3,4,8,5,11,1",
+                            "9,1,6,1,3,5,5,1,11,3,10,4,7,2,4,4,1,0,2,5,8,6",
+                            "9,1,10,4,2,0,5,1,11,4,4,3,6,3,8,1,1,0,7,2,3,3",
+                            "11,7,4,2,1,2,3,5,9,5,2,0,5,5,8,0,6,1,10,2,7,8",
+                            "11,0,10,2,2,0,8,10,5,1,6,3,9,6,1,2,4,2,7,8,3,3",
+                            "7,6,2,0,3,5,1,1,8,7,11,10,9,10,4,4,10,2,5,2,6,4",
+                            "7,6,2,0,3,5,1,1,4,3,6,3,10,7,11,6,8,9,9,3,5,0",
+                            "7,6,2,0,3,5,10,0,4,3,6,3,11,6,8,9,1,0,9,3,5,0",
+                            "7,6,2,0,3,5,11,1,8,4,1,0,10,7,6,3,4,0,9,3,5,0",
+                            "7,6,2,1,3,5,10,11,4,5,6,3,8,9,11,3,1,0,9,3,5,0",
+                            "7,11,5,2,2,0,6,1,8,9,11,5,9,11,1,0,3,4,10,1,4,3",
+                            "8,3,1,2,6,2,11,2,7,9,9,2,2,5,4,5,3,4,5,2,10,6",
+                            "8,3,3,5,11,9,10,11,4,5,6,3,7,0,2,0,1,0,9,3,5,0",
+                            "8,6,2,0,4,3,6,1,5,1,11,6,10,10,3,5,1,2,9,4,7,1",
+                            "8,6,3,5,5,1,2,2,10,5,11,7,4,4,9,9,1,2,6,5,7,8",
+                            "8,6,3,5,5,4,6,0,1,1,9,10,4,4,11,8,2,4,10,2,7,1",
+                            "8,6,3,5,5,4,7,7,1,0,11,7,4,4,2,0,6,3,10,9,9,3",
+                            "8,6,3,5,5,4,9,1,1,1,6,4,4,4,11,8,2,4,10,2,7,1",
+                            "8,6,3,5,6,0,10,11,4,5,2,4,7,9,11,3,1,0,9,3,5,0",
+                            "8,6,3,5,7,10,1,0,11,7,2,4,10,7,4,0,6,3,9,3,5,0",
+                            "8,6,3,5,10,4,6,2,4,5,2,2,11,6,7,0,1,0,9,3,5,0",
+                            "7,5,6,5,2,0,8,9,9,4,11,9,1,2,5,2,10,5,4,2,3,3",
+                            "7,5,6,5,2,0,8,9,9,4,11,9,5,1,1,0,3,4,10,3,4,3",
+                            ]
+solutions_board_1_strings = []
+solutions_board_2_strings = []
+solutions_board_3_strings = ["4,0,10,11,3,4,1,0,9,5,5,5,7,0,2,3,6,5,11,2,8,6"]
+solutions_board_4_strings = []
+
 
 def print_sequence_on_board(board, sequence):
 
@@ -713,6 +826,7 @@ def print_sequence_on_board(board, sequence):
             seq.append((int(p),int(o)))
         sequence = seq
 
+    # print(sequence)
     solver.build_up_state(board, pieces_with_orientations,sequence,True)
     
     # start with zero level
@@ -728,12 +842,17 @@ def print_sequence_on_board(board, sequence):
 if __name__ == "__main__":
 
     logger = logger_setup()
+
     database_path = r"C:\temp\haley_puzzle\Haley_puzzle_board_{}.db".format(0)
+    # database_path = r"C:\temp\haley_puzzle\Haley_puzzle_board_{}.db".format(0)
     # database_path = r"D:\Temp\puzzle_haley\Haley_puzzle_board_{}.db".format(0)
 
     # print_sequence_on_board(starting_puzzle_boards[0], [(2,3)])
     # print_sequence_on_board(starting_puzzle_boards[0], "2,5,4,2,11,2,5,5,7,10,10,11")
-    # exit()
+
+    # for sequence in solutions_board_0:
+    print_sequence_on_board(starting_puzzle_boards[0],solutions_board_0[54])
+    exit()
 
     findall = FindAllSolutions(
         database_path,
@@ -742,41 +861,19 @@ if __name__ == "__main__":
         index_per_piece_with_orientation[1:],
         logger
         )
-    findall.initiate_search()
+
+    REPROCESS = True  # only set to true if no other processes are running. It means that the database had rows "hanging". That a process was interrupted.
+    findall.initiate_search(100,REPROCESS)
 
     exit()
-    # solve_board_0_by_level_build_up( db_path, starting_puzzle_boards[0], pieces_with_orientations, index_per_piece_with_orientation[1:], logger)
-    
-    # next_level_pieces = findall.extend_sequence_with_all_possibilities([(2,3),(1,1),(3,2)])
-    seqs = [[]]
-    while True:
-        new_seqs = []
-        for seq in seqs:
-            # logger.info("check {}".format(seq))
-            new_seqs.extend(findall.get_next_level_sequences(seq))
-        logger.info(len(new_seqs))
-        seqs = new_seqs
-        logger.info("next level")
-
-        # for s in seqs:
-            
-        #     logger.info(s)
-    exit()
-
-
+   
     # show_a_solution()
     # exit()
-
-    
-    
-
 
     # try_sequences_for_all_boards(starting_puzzle_boards, sequences_to_try= [[7,2,3,11,8,1,10,6,4,9,5]])
     try_sequences_for_all_boards(starting_puzzle_boards, sequences_to_try= [[2,1,4,8,7,9,6,11,3,5,10]])
 
     # test_sequences_from_database_loop(starting_puzzle_boards, logger)
-    
-   
 
     # board = starting_puzzle_boards[0]
     # solve_by_random(board)
