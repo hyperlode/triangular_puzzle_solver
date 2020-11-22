@@ -851,8 +851,8 @@ if __name__ == "__main__":
     # print_sequence_on_board(starting_puzzle_boards[0], "2,5,4,2,11,2,5,5,7,10,10,11")
 
     # for sequence in solutions_board_0:
-    print_sequence_on_board(starting_puzzle_boards[0],solutions_board_0[54])
-    exit()
+    # print_sequence_on_board(starting_puzzle_boards[0],solutions_board_0[54])
+    # exit()
 
     findall = FindAllSolutions(
         database_path,
